@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -94,7 +95,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         health_score = 0.0
         
     active_startups = last_history.active_startups if last_history else 0
-    migration_count = db.query(SimulationHistory).sum(SimulationHistory.migration_count) or 0
+    migration_count = db.query(func.sum(SimulationHistory.migration_count)).scalar() or 0
     collapse_risk = last_history.collapse_risk if last_history else 5.0
     gdp_growth = last_history.gdp_growth if last_history else 3.2
     
