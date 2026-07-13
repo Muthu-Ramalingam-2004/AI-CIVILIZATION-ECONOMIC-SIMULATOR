@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cyber-darker text-slate-100 font-sans antialiased overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 10% 20%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+      radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  @apply bg-cyber-card border border-cyber-border rounded-2xl backdrop-blur-xl shadow-glass;
+}
+
+.glass-panel-hover {
+  @apply transition-all duration-300 hover:border-purple-500/20 hover:shadow-neon-purple;
+}
+
+.glass-input {
+  @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-500/50 focus:bg-white/10 transition-all duration-200;
+}
+
+.glass-input-icon {
+  @apply glass-input;
+  padding-left: 3rem !important;
+}
+
+.glass-btn {
+  @apply bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-semibold px-6 py-3 rounded-xl shadow-glass hover:shadow-neon-cyan transition-all duration-200 cursor-pointer;
+}
+
+.glass-btn-secondary {
+  @apply bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 hover:text-white px-6 py-3 rounded-xl transition-all duration-200 cursor-pointer;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.6);
+}
