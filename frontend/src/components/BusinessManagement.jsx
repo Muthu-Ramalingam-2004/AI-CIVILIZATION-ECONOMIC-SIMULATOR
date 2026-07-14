@@ -13,19 +13,10 @@ import {
   ArrowUpDown,
   Search
 } from "lucide-react";
-import { INDUSTRIES } from "./WorldMap";
+import { INDUSTRIES, CITY_COORDS } from "./WorldMap";
 
-// Standard cities list
-const CITIES = [
-  "New York",
-  "San Francisco",
-  "London",
-  "Tokyo",
-  "Berlin",
-  "Singapore",
-  "Sydney",
-  "Bangalore"
-];
+// Cities derived from world map dataset – keeps dropdown in sync with map
+const CITIES = Object.keys(CITY_COORDS).sort();
 
 const STRATEGIES = ["aggressive_expansion", "cost_cutting", "moderate_growth", "r_and_d_focus"];
 
