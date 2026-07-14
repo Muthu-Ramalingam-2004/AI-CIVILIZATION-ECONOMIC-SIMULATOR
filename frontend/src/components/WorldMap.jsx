@@ -12,82 +12,82 @@ const latToY = (lat) => ((90 - lat) / 180) * 500;
 
 export const CITY_COORDS = {
   // ── North America ──────────────────────────────────────────────
-  "New York":       { x: lngToX(-74.01),  y: latToY(40.71),  country: "United States",   region: "North America" },
-  "San Francisco":  { x: lngToX(-122.42), y: latToY(37.77),  country: "United States",   region: "North America" },
-  "Los Angeles":    { x: lngToX(-118.24), y: latToY(34.05),  country: "United States",   region: "North America" },
-  "Chicago":        { x: lngToX(-87.63),  y: latToY(41.88),  country: "United States",   region: "North America" },
-  "Seattle":        { x: lngToX(-122.33), y: latToY(47.61),  country: "United States",   region: "North America" },
-  "Austin":         { x: lngToX(-97.74),  y: latToY(30.27),  country: "United States",   region: "North America" },
-  "Toronto":        { x: lngToX(-79.38),  y: latToY(43.65),  country: "Canada",          region: "North America" },
-  "Vancouver":      { x: lngToX(-123.12), y: latToY(49.25),  country: "Canada",          region: "North America" },
-  "Mexico City":    { x: lngToX(-99.13),  y: latToY(19.43),  country: "Mexico",          region: "North America" },
+  "New York": { x: lngToX(-74.01), y: latToY(40.71), country: "United States", region: "North America" },
+  "San Francisco": { x: lngToX(-122.42), y: latToY(37.77), country: "United States", region: "North America" },
+  "Los Angeles": { x: lngToX(-118.24), y: latToY(34.05), country: "United States", region: "North America" },
+  "Chicago": { x: lngToX(-87.63), y: latToY(41.88), country: "United States", region: "North America" },
+  "Seattle": { x: lngToX(-122.33), y: latToY(47.61), country: "United States", region: "North America" },
+  "Austin": { x: lngToX(-97.74), y: latToY(30.27), country: "United States", region: "North America" },
+  "Toronto": { x: lngToX(-79.38), y: latToY(43.65), country: "Canada", region: "North America" },
+  "Vancouver": { x: lngToX(-123.12), y: latToY(49.25), country: "Canada", region: "North America" },
+  "Mexico City": { x: lngToX(-99.13), y: latToY(19.43), country: "Mexico", region: "North America" },
 
   // ── South America ──────────────────────────────────────────────
-  "São Paulo":      { x: lngToX(-46.63),  y: latToY(-23.55), country: "Brazil",          region: "South America" },
-  "Rio de Janeiro": { x: lngToX(-43.17),  y: latToY(-22.91), country: "Brazil",          region: "South America" },
-  "Buenos Aires":   { x: lngToX(-58.38),  y: latToY(-34.61), country: "Argentina",       region: "South America" },
-  "Bogotá":         { x: lngToX(-74.08),  y: latToY(4.71),   country: "Colombia",        region: "South America" },
-  "Lima":           { x: lngToX(-77.03),  y: latToY(-12.05), country: "Peru",            region: "South America" },
-  "Santiago":       { x: lngToX(-70.67),  y: latToY(-33.46), country: "Chile",           region: "South America" },
+  "São Paulo": { x: lngToX(-46.63), y: latToY(-23.55), country: "Brazil", region: "South America" },
+  "Rio de Janeiro": { x: lngToX(-43.17), y: latToY(-22.91), country: "Brazil", region: "South America" },
+  "Buenos Aires": { x: lngToX(-58.38), y: latToY(-34.61), country: "Argentina", region: "South America" },
+  "Bogotá": { x: lngToX(-74.08), y: latToY(4.71), country: "Colombia", region: "South America" },
+  "Lima": { x: lngToX(-77.03), y: latToY(-12.05), country: "Peru", region: "South America" },
+  "Santiago": { x: lngToX(-70.67), y: latToY(-33.46), country: "Chile", region: "South America" },
 
   // ── Europe ─────────────────────────────────────────────────────
-  "London":         { x: lngToX(-0.13),   y: latToY(51.51),  country: "United Kingdom",  region: "Europe" },
-  "Berlin":         { x: lngToX(13.40),   y: latToY(52.52),  country: "Germany",         region: "Europe" },
-  "Paris":          { x: lngToX(2.35),    y: latToY(48.86),  country: "France",          region: "Europe" },
-  "Amsterdam":      { x: lngToX(4.90),    y: latToY(52.37),  country: "Netherlands",     region: "Europe" },
-  "Stockholm":      { x: lngToX(18.07),   y: latToY(59.33),  country: "Sweden",          region: "Europe" },
-  "Madrid":         { x: lngToX(-3.70),   y: latToY(40.42),  country: "Spain",           region: "Europe" },
-  "Milan":          { x: lngToX(9.19),    y: latToY(45.46),  country: "Italy",           region: "Europe" },
-  "Zürich":         { x: lngToX(8.54),    y: latToY(47.38),  country: "Switzerland",     region: "Europe" },
-  "Warsaw":         { x: lngToX(21.01),   y: latToY(52.23),  country: "Poland",          region: "Europe" },
-  "Vienna":         { x: lngToX(16.37),   y: latToY(48.21),  country: "Austria",         region: "Europe" },
+  "London": { x: lngToX(-0.13), y: latToY(51.51), country: "United Kingdom", region: "Europe" },
+  "Berlin": { x: lngToX(13.40), y: latToY(52.52), country: "Germany", region: "Europe" },
+  "Paris": { x: lngToX(2.35), y: latToY(48.86), country: "France", region: "Europe" },
+  "Amsterdam": { x: lngToX(4.90), y: latToY(52.37), country: "Netherlands", region: "Europe" },
+  "Stockholm": { x: lngToX(18.07), y: latToY(59.33), country: "Sweden", region: "Europe" },
+  "Madrid": { x: lngToX(-3.70), y: latToY(40.42), country: "Spain", region: "Europe" },
+  "Milan": { x: lngToX(9.19), y: latToY(45.46), country: "Italy", region: "Europe" },
+  "Zürich": { x: lngToX(8.54), y: latToY(47.38), country: "Switzerland", region: "Europe" },
+  "Warsaw": { x: lngToX(21.01), y: latToY(52.23), country: "Poland", region: "Europe" },
+  "Vienna": { x: lngToX(16.37), y: latToY(48.21), country: "Austria", region: "Europe" },
 
   // ── Africa ─────────────────────────────────────────────────────
-  "Lagos":          { x: lngToX(3.38),    y: latToY(6.46),   country: "Nigeria",         region: "Africa" },
-  "Nairobi":        { x: lngToX(36.82),   y: latToY(-1.29),  country: "Kenya",           region: "Africa" },
-  "Cairo":          { x: lngToX(31.23),   y: latToY(30.06),  country: "Egypt",           region: "Africa" },
-  "Johannesburg":   { x: lngToX(28.05),   y: latToY(-26.20), country: "South Africa",    region: "Africa" },
-  "Casablanca":     { x: lngToX(-7.59),   y: latToY(33.59),  country: "Morocco",         region: "Africa" },
-  "Accra":          { x: lngToX(-0.19),   y: latToY(5.56),   country: "Ghana",           region: "Africa" },
+  "Lagos": { x: lngToX(3.38), y: latToY(6.46), country: "Nigeria", region: "Africa" },
+  "Nairobi": { x: lngToX(36.82), y: latToY(-1.29), country: "Kenya", region: "Africa" },
+  "Cairo": { x: lngToX(31.23), y: latToY(30.06), country: "Egypt", region: "Africa" },
+  "Johannesburg": { x: lngToX(28.05), y: latToY(-26.20), country: "South Africa", region: "Africa" },
+  "Casablanca": { x: lngToX(-7.59), y: latToY(33.59), country: "Morocco", region: "Africa" },
+  "Accra": { x: lngToX(-0.19), y: latToY(5.56), country: "Ghana", region: "Africa" },
 
   // ── Middle East ────────────────────────────────────────────────
-  "Dubai":          { x: lngToX(55.30),   y: latToY(25.20),  country: "UAE",             region: "Middle East" },
-  "Riyadh":         { x: lngToX(46.72),   y: latToY(24.69),  country: "Saudi Arabia",    region: "Middle East" },
-  "Tel Aviv":       { x: lngToX(34.78),   y: latToY(32.08),  country: "Israel",          region: "Middle East" },
-  "Istanbul":       { x: lngToX(28.98),   y: latToY(41.01),  country: "Turkey",          region: "Middle East" },
+  "Dubai": { x: lngToX(55.30), y: latToY(25.20), country: "UAE", region: "Middle East" },
+  "Riyadh": { x: lngToX(46.72), y: latToY(24.69), country: "Saudi Arabia", region: "Middle East" },
+  "Tel Aviv": { x: lngToX(34.78), y: latToY(32.08), country: "Israel", region: "Middle East" },
+  "Istanbul": { x: lngToX(28.98), y: latToY(41.01), country: "Turkey", region: "Middle East" },
 
   // ── Asia ───────────────────────────────────────────────────────
-  "Tokyo":          { x: lngToX(139.69),  y: latToY(35.68),  country: "Japan",           region: "Asia" },
-  "Singapore":      { x: lngToX(103.82),  y: latToY(1.35),   country: "Singapore",       region: "Asia" },
-  "Bangalore":      { x: lngToX(77.59),   y: latToY(12.97),  country: "India",           region: "Asia" },
-  "Mumbai":         { x: lngToX(72.88),   y: latToY(19.08),  country: "India",           region: "Asia" },
-  "New Delhi":      { x: lngToX(77.21),   y: latToY(28.63),  country: "India",           region: "Asia" },
-  "Shanghai":       { x: lngToX(121.47),  y: latToY(31.23),  country: "China",           region: "Asia" },
-  "Beijing":        { x: lngToX(116.39),  y: latToY(39.91),  country: "China",           region: "Asia" },
-  "Shenzhen":       { x: lngToX(114.06),  y: latToY(22.54),  country: "China",           region: "Asia" },
-  "Seoul":          { x: lngToX(126.98),  y: latToY(37.57),  country: "South Korea",     region: "Asia" },
-  "Hong Kong":      { x: lngToX(114.17),  y: latToY(22.32),  country: "Hong Kong",       region: "Asia" },
-  "Taipei":         { x: lngToX(121.57),  y: latToY(25.04),  country: "Taiwan",          region: "Asia" },
-  "Bangkok":        { x: lngToX(100.52),  y: latToY(13.75),  country: "Thailand",        region: "Asia" },
-  "Kuala Lumpur":   { x: lngToX(101.69),  y: latToY(3.15),   country: "Malaysia",        region: "Asia" },
-  "Jakarta":        { x: lngToX(106.84),  y: latToY(-6.21),  country: "Indonesia",       region: "Asia" },
+  "Tokyo": { x: lngToX(139.69), y: latToY(35.68), country: "Japan", region: "Asia" },
+  "Singapore": { x: lngToX(103.82), y: latToY(1.35), country: "Singapore", region: "Asia" },
+  "Bangalore": { x: lngToX(77.59), y: latToY(12.97), country: "India", region: "Asia" },
+  "Mumbai": { x: lngToX(72.88), y: latToY(19.08), country: "India", region: "Asia" },
+  "New Delhi": { x: lngToX(77.21), y: latToY(28.63), country: "India", region: "Asia" },
+  "Shanghai": { x: lngToX(121.47), y: latToY(31.23), country: "China", region: "Asia" },
+  "Beijing": { x: lngToX(116.39), y: latToY(39.91), country: "China", region: "Asia" },
+  "Shenzhen": { x: lngToX(114.06), y: latToY(22.54), country: "China", region: "Asia" },
+  "Seoul": { x: lngToX(126.98), y: latToY(37.57), country: "South Korea", region: "Asia" },
+  "Hong Kong": { x: lngToX(114.17), y: latToY(22.32), country: "Hong Kong", region: "Asia" },
+  "Taipei": { x: lngToX(121.57), y: latToY(25.04), country: "Taiwan", region: "Asia" },
+  "Bangkok": { x: lngToX(100.52), y: latToY(13.75), country: "Thailand", region: "Asia" },
+  "Kuala Lumpur": { x: lngToX(101.69), y: latToY(3.15), country: "Malaysia", region: "Asia" },
+  "Jakarta": { x: lngToX(106.84), y: latToY(-6.21), country: "Indonesia", region: "Asia" },
 
   // ── Oceania ────────────────────────────────────────────────────
-  "Sydney":         { x: lngToX(151.21),  y: latToY(-33.87), country: "Australia",       region: "Oceania" },
-  "Melbourne":      { x: lngToX(144.96),  y: latToY(-37.81), country: "Australia",       region: "Oceania" },
-  "Auckland":       { x: lngToX(174.77),  y: latToY(-36.86), country: "New Zealand",     region: "Oceania" },
+  "Sydney": { x: lngToX(151.21), y: latToY(-33.87), country: "Australia", region: "Oceania" },
+  "Melbourne": { x: lngToX(144.96), y: latToY(-37.81), country: "Australia", region: "Oceania" },
+  "Auckland": { x: lngToX(174.77), y: latToY(-36.86), country: "New Zealand", region: "Oceania" },
 };
 
 export const INDUSTRIES = ["Technology", "Finance", "Healthcare", "Retail", "Manufacturing", "Energy"];
 
 // ─── Industry Color Map ────────────────────────────────────────────────────────
 const INDUSTRY_COLORS = {
-  Technology:     "#22d3ee",
-  Finance:        "#a78bfa",
-  Healthcare:     "#34d399",
-  Retail:         "#fb923c",
-  Manufacturing:  "#94a3b8",
-  Energy:         "#facc15",
+  Technology: "#22d3ee",
+  Finance: "#a78bfa",
+  Healthcare: "#34d399",
+  Retail: "#fb923c",
+  Manufacturing: "#94a3b8",
+  Energy: "#facc15",
 };
 
 const WorldMap = () => {
@@ -151,7 +151,7 @@ const WorldMap = () => {
     let health = 50;
     if (activeCount > 0) {
       const avgPF = cityBizs.reduce((acc, b) => acc + (b.revenue || 0) / Math.max(b.expenses || 1, 1), 0) / activeCount;
-      const avgG  = cityBizs.reduce((acc, b) => acc + (b.growth_rate || 0), 0) / activeCount;
+      const avgG = cityBizs.reduce((acc, b) => acc + (b.growth_rate || 0), 0) / activeCount;
       health = Math.max(5, Math.min(100, avgPF * 50 + avgG * 200));
     }
     return { name: city, activeCount, totalEmployees, totalRev, avgRisk, health };
@@ -320,7 +320,7 @@ const WorldMap = () => {
               {/* ── Migration Trace Lines ── */}
               {migrations.map((mig) => {
                 const from = safeCoord(mig.from);
-                const to   = safeCoord(mig.to);
+                const to = safeCoord(mig.to);
                 if (!from || !to) return null;
                 const dr = Math.sqrt((to.x - from.x) ** 2 + (to.y - from.y) ** 2);
                 const pathStr = `M ${from.x} ${from.y} A ${dr} ${dr} 0 0 1 ${to.x} ${to.y}`;
@@ -343,10 +343,10 @@ const WorldMap = () => {
               {allDisplayCities.map((c) => {
                 const coord = safeCoord(c);
                 if (!coord) return null;
-                const stats      = getCityStats(c);
-                const isHotspot  = hotspots.some((h) => h.name === c);
+                const stats = getCityStats(c);
+                const isHotspot = hotspots.some((h) => h.name === c);
                 const isSelected = selectedCity === c;
-                const hasAgents  = stats.activeCount > 0;
+                const hasAgents = stats.activeCount > 0;
 
                 return (
                   <g
@@ -453,7 +453,7 @@ const WorldMap = () => {
                   className="absolute z-20 bg-slate-950/95 border border-white/15 p-3 rounded-xl pointer-events-none text-xs w-52 shadow-glass"
                   style={{
                     left: `${Math.min(75, (coord.x / 1000) * 100)}%`,
-                    top:  `${Math.min(65, (coord.y / 500) * 100)}%`,
+                    top: `${Math.min(65, (coord.y / 500) * 100)}%`,
                     transform: "translate(-50%, -110%)",
                   }}
                 >
@@ -613,4 +613,3 @@ const WorldMap = () => {
 };
 
 export default WorldMap;
-export { INDUSTRIES };
