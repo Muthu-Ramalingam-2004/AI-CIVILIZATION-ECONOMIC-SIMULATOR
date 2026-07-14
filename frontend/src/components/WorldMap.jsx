@@ -90,6 +90,35 @@ const INDUSTRY_COLORS = {
   Energy: "#facc15",
 };
 
+// ─── Label collision offset helper ───────────────────────────────────────────
+// Given all city coordinates, nudge labels that are too close to each other
+const computeLabelOffsets = (coords) => {
+  const offsets = {};
+  const cityNames = Object.keys(coords);
+  const LABEL_H = 10; // approximate label height in SVG units
+  const LABEL_W = 40; // approximate half-width in SVG units
+  // Initialize all offsets to default (above the node)
+  cityNames.forEach((c) => { offsets[c] = { dx: 0, dy: -14 }; });
+  // Simple one-pass nudge: if two labels overlap, push one below
+  for (let i = 0; i < cityNames.length; i++) {
+    for (let j = i + 1; j < cityNames.length; j++) {
+      const ci = coords[cityNames[i]];
+      const cj = coords[cityNames[j]];
+      if (!ci || !cj) continue;
+      const ox = offsets[cityNames[i]]; const oy = offsets[cityNames[j]];
+      const lxi = ci.x + ox.dx; const lyi = ci.y + ox.dy;
+      const lxj = cj.x + oy.dx; const lyj = cj.y + oy.dy;
+      const overlapX = Math.abs(lxi - lxj) < LABEL_W * 2;
+      const overlapY = Math.abs(lyi - lyj) < LABEL_H;
+      if (overlapX && overlapY) {
+        // push j's label below its node instead
+        offsets[cityNames[j]] = { dx: 0, dy: 18 };
+      }
+    }
+  }
+  return offsets;
+};
+
 const WorldMap = () => {
   const [businesses, setBusinesses] = useState([]);
   const [migrations, setMigrations] = useState([]);
@@ -97,12 +126,18 @@ const WorldMap = () => {
   const [hoveredCity, setHoveredCity] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
-  const [viewBox, setViewBox] = useState("0 0 1000 500");
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+  // ── Fullscreen state ────────────────────────────────────────────
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  // ── Zoom / pan state ────────────────────────────────────────────
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef(null);
+  const panOrigin = useRef({ x: 0, y: 0 });
   const svgRef = useRef(null);
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -139,6 +174,48 @@ const WorldMap = () => {
     fetchData();
   }, []);
 
+  // ─── ESC key closes fullscreen ────────────────────────────────
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") setIsFullscreen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // ─── Zoom helpers ─────────────────────────────────────────────
+  const applyZoom = (delta) => {
+    setZoomLevel((prev) => {
+      const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev + delta));
+      // When zooming out to 1x, reset pan
+      if (next === 1) { setPanX(0); setPanY(0); }
+      return next;
+    });
+  };
+  const resetZoom = () => { setZoomLevel(1); setPanX(0); setPanY(0); };
+
+  // ─── Wheel zoom ───────────────────────────────────────────────
+  const handleWheel = (e) => {
+    e.preventDefault();
+    applyZoom(e.deltaY < 0 ? 0.25 : -0.25);
+  };
+
+  // ─── Drag-to-pan on the SVG wrapper ──────────────────────────
+  const handlePanStart = (e) => {
+    if (zoomLevel <= 1) return;
+    setIsPanning(true);
+    panStart.current = { x: e.clientX, y: e.clientY };
+    panOrigin.current = { x: panX, y: panY };
+  };
+  const handlePanMove = (e) => {
+    if (!isPanning || !panStart.current) return;
+    const dx = e.clientX - panStart.current.x;
+    const dy = e.clientY - panStart.current.y;
+    // Clamp pan so map doesn't drift too far
+    const maxPan = 200 * (zoomLevel - 1);
+    setPanX(Math.min(maxPan, Math.max(-maxPan, panOrigin.current.x + dx)));
+    setPanY(Math.min(maxPan / 2, Math.max(-maxPan / 2, panOrigin.current.y + dy)));
+  };
+  const handlePanEnd = () => { setIsPanning(false); panStart.current = null; };
+
   // ─── Stats per city ───────────────────────────────────────────
   const getCityStats = (city) => {
     const cityBizs = businesses.filter((b) => b.city === city && b.is_active !== false);
@@ -167,6 +244,9 @@ const WorldMap = () => {
 
   const citiesStats = allDisplayCities.map((c) => getCityStats(c));
   const hotspots = citiesStats.filter((c) => c.health > 60 && c.activeCount > 1);
+
+  // ─── Pre-compute label offsets to avoid overlaps ──────────────
+  const labelOffsets = computeLabelOffsets(CITY_COORDS);
 
   const activeCityData = selectedCity ? getCityStats(selectedCity) : null;
   const activeCityBizs = selectedCity
@@ -259,7 +339,40 @@ const WorldMap = () => {
             ))}
           </div>
 
-          <div className="w-full relative aspect-[2/1] bg-slate-950/65 rounded-xl border border-white/5 overflow-hidden mt-2">
+          {/* ── Zoom Controls ── */}
+          <div className="flex items-center gap-2 self-end mb-1">
+            <button
+              onClick={() => applyZoom(0.5)}
+              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 flex items-center justify-center text-sm font-bold transition-colors"
+              title="Zoom In"
+            >+</button>
+            <button
+              onClick={() => applyZoom(-0.5)}
+              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 flex items-center justify-center text-sm font-bold transition-colors"
+              title="Zoom Out"
+            >−</button>
+            <button
+              onClick={resetZoom}
+              className="px-2 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 text-[10px] font-semibold tracking-wide transition-colors"
+              title="Reset Zoom"
+            >{zoomLevel.toFixed(1)}×</button>
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="px-2 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 text-[10px] font-semibold tracking-wide transition-colors"
+              title="Fullscreen map"
+            >⛶ Fullscreen</button>
+          </div>
+
+          <div
+            className="w-full relative aspect-[2/1] bg-slate-950/65 rounded-xl border border-white/5 overflow-hidden mt-0"
+            onWheel={handleWheel}
+            onMouseDown={handlePanStart}
+            onMouseMove={handlePanMove}
+            onMouseUp={handlePanEnd}
+            onMouseLeave={handlePanEnd}
+            style={{ cursor: zoomLevel > 1 ? (isPanning ? "grabbing" : "grab") : "default" }}
+            onClick={() => { if (!isPanning) setIsFullscreen(true); }}
+          >
             <svg
               ref={svgRef}
               viewBox="0 0 1000 500"
@@ -282,6 +395,8 @@ const WorldMap = () => {
                   <stop offset="100%" stopColor="#030810" />
                 </radialGradient>
               </defs>
+              {/* ── Zoom / Pan transform group ── */}
+              <g transform={`translate(${panX / (1000 / 1000)}, ${panY / (500 / 500)}) scale(${zoomLevel}) translate(${-(1000 / 2) * (1 - 1 / zoomLevel)}, ${-(500 / 2) * (1 - 1 / zoomLevel)})`}>
 
               {/* Ocean background */}
               <rect width="1000" height="500" fill="url(#oceanGrad)" />
@@ -389,17 +504,21 @@ const WorldMap = () => {
                         {stats.activeCount > 9 ? "9+" : stats.activeCount}
                       </text>
                     )}
-                    {/* City label */}
+                    {/* City label — larger font with collision-offset */}
                     <text
-                      x={coord.x}
-                      y={coord.y - 11}
+                      x={coord.x + (labelOffsets[c]?.dx ?? 0)}
+                      y={coord.y + (labelOffsets[c]?.dy ?? -14)}
                       textAnchor="middle"
-                      fill={isSelected ? "#22d3ee" : "#cbd5e1"}
-                      fontSize="8"
-                      fontWeight="600"
-                      letterSpacing="0.3"
+                      dominantBaseline={((labelOffsets[c]?.dy ?? -14) > 0) ? "hanging" : "auto"}
+                      fill={isSelected ? "#22d3ee" : "#e2e8f0"}
+                      fontSize="10.5"
+                      fontWeight="700"
+                      letterSpacing="0.2"
                       className="pointer-events-none"
-                      style={{ textShadow: "0 0 6px #000, 0 0 6px #000" }}
+                      paintOrder="stroke"
+                      stroke="#000"
+                      strokeWidth="3"
+                      strokeLinejoin="round"
                     >
                       {c}
                     </text>
@@ -440,6 +559,7 @@ const WorldMap = () => {
                     </g>
                   );
                 })}
+              </g>{/* end zoom/pan group */}
             </svg>
 
             {/* ── Hover Tooltip ── */}
@@ -473,6 +593,190 @@ const WorldMap = () => {
             })()}
           </div>
         </GlassCard>
+
+        {/* ── Fullscreen Modal Overlay ── */}
+        {isFullscreen && (
+          <div
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col"
+            style={{ top: 0, left: 0, right: 0, bottom: 0 }}
+          >
+            {/* Close bar */}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0">
+              <div className="flex items-center gap-3">
+                <Map className="text-cyan-400" size={20} />
+                <span className="text-slate-200 font-extrabold text-sm uppercase tracking-widest">INTERACTIVE GLOBAL LEDGER MAP</span>
+                <span className="text-slate-500 text-xs">{allDisplayCities.length} hubs · {businesses.length} agents</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => applyZoom(0.5)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-bold transition-colors">+</button>
+                <button onClick={() => applyZoom(-0.5)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-bold transition-colors">−</button>
+                <button onClick={resetZoom} className="px-3 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 text-xs font-semibold">{zoomLevel.toFixed(1)}×</button>
+                <button
+                  onClick={() => { setIsFullscreen(false); resetZoom(); }}
+                  className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 flex items-center justify-center transition-colors ml-1"
+                  title="Close fullscreen (ESC)"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            {/* Full map */}
+            <div
+              className="flex-1 relative overflow-hidden"
+              onWheel={handleWheel}
+              onMouseDown={handlePanStart}
+              onMouseMove={handlePanMove}
+              onMouseUp={handlePanEnd}
+              onMouseLeave={handlePanEnd}
+              style={{ cursor: zoomLevel > 1 ? (isPanning ? "grabbing" : "grab") : "default" }}
+            >
+              <svg
+                viewBox="0 0 1000 500"
+                className="w-full h-full select-none"
+                style={{ background: "linear-gradient(180deg, #03050f 0%, #050a1a 100%)" }}
+              >
+                <defs>
+                  <pattern id="grid-fs" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.025)" strokeWidth="0.5" />
+                  </pattern>
+                  <marker id="arrow-fs" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#22d3ee" />
+                  </marker>
+                  <filter id="glow-fs">
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                    <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                  <radialGradient id="oceanGrad-fs" cx="50%" cy="50%" r="70%">
+                    <stop offset="0%" stopColor="#0a1628" />
+                    <stop offset="100%" stopColor="#030810" />
+                  </radialGradient>
+                </defs>
+                <g transform={`translate(${panX}, ${panY}) scale(${zoomLevel}) translate(${-(1000 / 2) * (1 - 1 / zoomLevel)}, ${-(500 / 2) * (1 - 1 / zoomLevel)})`}>
+                  <rect width="1000" height="500" fill="url(#oceanGrad-fs)" />
+                  <rect width="1000" height="500" fill="url(#grid-fs)" />
+                  {/* Continents */}
+                  <polygon points="65,55 130,40 200,50 255,65 295,85 300,125 285,175 260,215 235,240 195,255 170,250 140,220 100,195 70,160 50,120 55,85" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="210,235 235,240 240,265 220,280 200,270 195,255" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="230,280 270,265 310,275 345,310 355,350 345,400 320,440 285,455 255,450 235,410 215,365 205,320 215,290" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="430,50 490,40 520,55 555,50 580,60 590,85 575,100 555,110 530,115 510,130 490,125 470,135 455,130 440,110 430,90" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="480,35 510,25 540,30 560,50 540,60 510,55 485,50" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="430,115 460,105 475,125 465,145 440,150 425,135" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="540,30 640,20 780,25 860,40 890,65 870,90 840,95 810,80 780,75 740,70 700,75 660,85 620,80 580,85 550,75 535,60" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="455,145 520,140 565,145 595,155 615,190 620,235 610,285 590,330 555,370 520,385 490,380 465,360 445,325 435,285 430,240 435,200 445,170" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="560,135 610,130 640,145 650,170 635,195 605,200 575,190 555,170 550,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="650,135 700,130 730,140 740,165 735,200 720,230 700,250 680,255 660,235 645,205 640,175 645,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="750,175 800,170 840,185 850,210 830,230 800,235 770,225 745,205 740,190" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="850,130 870,120 890,130 885,160 870,175 855,165 840,145" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="775,325 840,315 900,330 920,360 910,400 880,420 840,415 800,400 775,370 765,345" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+                  <polygon points="930,370 945,360 955,380 945,400 930,395" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  {/* Migration lines */}
+                  {migrations.map((mig) => {
+                    const fromC = safeCoord(mig.from);
+                    const toC = safeCoord(mig.to);
+                    if (!fromC || !toC) return null;
+                    const dr = Math.sqrt((toC.x - fromC.x) ** 2 + (toC.y - fromC.y) ** 2);
+                    return (
+                      <path key={mig.id} d={`M ${fromC.x} ${fromC.y} A ${dr} ${dr} 0 0 1 ${toC.x} ${toC.y}`}
+                        fill="none" stroke="#06b6d4" strokeWidth="1.2" strokeDasharray="6 4"
+                        markerEnd="url(#arrow-fs)" opacity="0.65"
+                        style={{ strokeDashoffset: 100, animation: "dash 5s linear infinite" }} />
+                    );
+                  })}
+                  {/* City nodes */}
+                  {allDisplayCities.map((c) => {
+                    const coord = safeCoord(c);
+                    if (!coord) return null;
+                    const stats = getCityStats(c);
+                    const isHotspot = hotspots.some((h) => h.name === c);
+                    const isSelected = selectedCity === c;
+                    const hasAgents = stats.activeCount > 0;
+                    const lOff = labelOffsets[c] || { dx: 0, dy: -14 };
+                    return (
+                      <g key={c} style={{ cursor: "pointer" }}
+                        onMouseEnter={() => setHoveredCity(c)}
+                        onMouseLeave={() => setHoveredCity(null)}
+                        onClick={(e) => { e.stopPropagation(); handleCityClick(c); }}
+                      >
+                        {isHotspot && <circle cx={coord.x} cy={coord.y} r="14" fill="none" stroke="#22d3ee" strokeWidth="1.5" className="animate-ping opacity-40" />}
+                        {isSelected && <circle cx={coord.x} cy={coord.y} r="12" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />}
+                        <circle cx={coord.x} cy={coord.y}
+                          r={isSelected ? 7.5 : hasAgents ? 6 : 4}
+                          fill={isHotspot ? "#06b6d4" : hasAgents ? "#a855f7" : "rgba(148,163,184,0.4)"}
+                          stroke={isSelected ? "#ffffff" : "rgba(255,255,255,0.2)"}
+                          strokeWidth={isSelected ? 1.8 : 0.8}
+                          filter={hasAgents ? "url(#glow-fs)" : undefined}
+                        />
+                        {hasAgents && (
+                          <text x={coord.x} y={coord.y + 1} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="5" fontWeight="bold" className="pointer-events-none">
+                            {stats.activeCount > 9 ? "9+" : stats.activeCount}
+                          </text>
+                        )}
+                        <text
+                          x={coord.x + lOff.dx}
+                          y={coord.y + lOff.dy}
+                          textAnchor="middle"
+                          dominantBaseline={lOff.dy > 0 ? "hanging" : "auto"}
+                          fill={isSelected ? "#22d3ee" : "#e2e8f0"}
+                          fontSize="10.5"
+                          fontWeight="700"
+                          letterSpacing="0.2"
+                          className="pointer-events-none"
+                          paintOrder="stroke"
+                          stroke="#000"
+                          strokeWidth="3"
+                          strokeLinejoin="round"
+                        >{c}</text>
+                      </g>
+                    );
+                  })}
+                  {/* Business markers */}
+                  {businesses.filter((b) => {
+                    const lat = parseFloat(b.latitude);
+                    const lng = parseFloat(b.longitude);
+                    return !isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+                  }).map((b) => {
+                    const bx = lngToX(parseFloat(b.longitude));
+                    const by = latToY(parseFloat(b.latitude));
+                    const color = INDUSTRY_COLORS[b.industry] || "#94a3b8";
+                    const isSelBiz = selectedBusiness?.id === b.id;
+                    return (
+                      <g key={`biz-fs-${b.id}`} style={{ cursor: "pointer" }}
+                        onClick={(e) => { e.stopPropagation(); handleBusinessClick(b); }}
+                        onMouseEnter={() => setHoveredCity(b.city)}
+                        onMouseLeave={() => setHoveredCity(null)}
+                      >
+                        <circle cx={bx} cy={by} r={isSelBiz ? 4.5 : 3} fill={color}
+                          stroke={isSelBiz ? "#fff" : "rgba(0,0,0,0.5)"}
+                          strokeWidth={isSelBiz ? 1.5 : 0.5} opacity="0.85" />
+                      </g>
+                    );
+                  })}
+                </g>
+              </svg>
+              {/* Hover tooltip in fullscreen */}
+              {hoveredCity && CITY_COORDS[hoveredCity] && (() => {
+                const coord = safeCoord(hoveredCity);
+                const stats = getCityStats(hoveredCity);
+                if (!coord) return null;
+                return (
+                  <div className="absolute z-20 bg-slate-950/95 border border-white/15 p-3 rounded-xl pointer-events-none text-xs w-52 shadow-glass"
+                    style={{ left: `${Math.min(75, (coord.x / 1000) * 100)}%`, top: `${Math.min(65, (coord.y / 500) * 100)}%`, transform: "translate(-50%, -110%)" }}
+                  >
+                    <div className="font-extrabold text-slate-100 flex items-center justify-between mb-1.5">
+                      <span>{hoveredCity}</span>
+                      <span className="text-[10px] text-slate-500 uppercase">{CITY_COORDS[hoveredCity].country}</span>
+                    </div>
+                    <div className="space-y-1 border-t border-white/5 pt-2 font-mono text-[10px] text-slate-300">
+                      <div className="flex justify-between"><span>Agents:</span><span className="text-slate-100 font-bold">{stats.activeCount}</span></div>
+                      <div className="flex justify-between"><span>Revenue:</span><span className="text-emerald-400">${Math.round(stats.totalRev).toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Health:</span><span className="text-cyan-400 font-bold">{stats.health.toFixed(1)}%</span></div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
 
         {/* ─── Hub Telemetry Panel ──────────────────────────────── */}
         <GlassCard className="flex flex-col overflow-hidden">
