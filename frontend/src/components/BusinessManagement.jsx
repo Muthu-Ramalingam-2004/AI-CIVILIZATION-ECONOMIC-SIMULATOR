@@ -175,16 +175,14 @@ const BusinessManagement = () => {
 
       {/* Filter and Search Bar */}
       <GlassCard className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4">
-        <div className="relative flex-1 max-w-sm">
-          <span className="absolute left-3 top-3 text-slate-500">
-            <Search size={16} />
-          </span>
+        <div className="relative flex-1 max-w-sm flex items-center">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search agents by name..."
+            placeholder="Search Agent by Name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="glass-input pl-10 py-2 text-xs"
+            className="glass-input-icon py-2 text-xs"
           />
         </div>
 
