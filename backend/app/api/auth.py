@@ -131,3 +131,41 @@ def update_user_status(
     log_event(db, f"User active status for '{user.username}' updated to '{is_active}' by admin '{current_user.username}'.", "INFO", "auth")
     return user
 
+@router.delete("/users/{user_id}", status_code=204)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own admin account")
+    db.delete(user)
+    db.commit()
+    log_event(db, f"User '{user.username}' (ID: {user_id}) deleted by admin '{current_user.username}'.", "WARNING", "auth")
+    return None
+
+@router.post("/users", response_model=UserResponse, status_code=201)
+def create_user(
+    user_in: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    if db.query(User).filter(User.username == user_in.username).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
+    if db.query(User).filter(User.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email already exists")
+    user = User(
+        username=user_in.username,
+        email=user_in.email,
+        hashed_password=get_password_hash(user_in.password),
+        role="user",
+        is_active=True,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    log_event(db, f"Admin '{current_user.username}' created new user '{user.username}'.", "INFO", "auth")
+    return user

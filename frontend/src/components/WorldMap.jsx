@@ -300,11 +300,11 @@ const WorldMap = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400 flex items-center gap-2">
-          <Map className="text-cyan-400" />
+        <h2 className="text-2xl font-extrabold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+          <Map className="text-cyan-500" />
           INTERACTIVE GLOBAL LEDGER MAP
         </h2>
-        <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">
+        <p className="text-xs uppercase tracking-widest mt-1" style={{ color: "var(--text-muted)" }}>
           {allDisplayCities.length} global hubs · {businesses.length} active agents · {migrations.length} migration vectors
         </p>
       </div>
@@ -313,28 +313,28 @@ const WorldMap = () => {
         {/* ─── SVG Map ─────────────────────────────────────────── */}
         <GlassCard className="xl:col-span-2 relative overflow-hidden flex flex-col p-4 gap-3">
           {/* Legend */}
-          <div className="absolute top-6 left-6 z-10 bg-black/70 backdrop-blur border border-white/10 p-3 rounded-xl text-[11px] space-y-1.5">
+          <div className="absolute top-6 left-6 z-10 glass-panel p-3 text-[11px] space-y-1.5" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block shadow-neon-cyan animate-pulse" />
-              <span className="text-slate-300">Economic Hotspot</span>
+              <span style={{ color: "var(--map-text-bright)" }}>Economic Hotspot</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
-              <span className="text-slate-300">Active Business Hub</span>
+              <span style={{ color: "var(--map-text-bright)" }}>Active Business Hub</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="border-t border-dashed border-cyan-400 w-6 inline-block" />
-              <span className="text-slate-300">Migration Trace</span>
+              <span style={{ color: "var(--map-text-bright)" }}>Migration Trace</span>
             </div>
-            <div className="mt-1 pt-1 border-t border-white/5 text-slate-500 text-[10px]">Click any node to inspect</div>
+            <div className="mt-1 pt-1 border-t text-[10px]" style={{ color: "var(--map-text-dim)", borderColor: "var(--border-color)" }}>Click any node to inspect</div>
           </div>
 
           {/* Industry legend */}
-          <div className="absolute top-6 right-6 z-10 bg-black/70 backdrop-blur border border-white/10 p-3 rounded-xl text-[10px] space-y-1">
+          <div className="absolute top-6 right-6 z-10 glass-panel p-3 text-[10px] space-y-1" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
             {Object.entries(INDUSTRY_COLORS).map(([ind, color]) => (
               <div key={ind} className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ background: color }} />
-                <span className="text-slate-400">{ind}</span>
+                <span style={{ color: "var(--map-text-bright)" }}>{ind}</span>
               </div>
             ))}
           </div>
@@ -343,45 +343,54 @@ const WorldMap = () => {
           <div className="flex items-center gap-2 self-end mb-1">
             <button
               onClick={() => applyZoom(0.5)}
-              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 flex items-center justify-center text-sm font-bold transition-colors"
+              className="w-7 h-7 rounded-lg glass-btn-secondary flex items-center justify-center text-sm font-bold transition-colors !p-0"
               title="Zoom In"
             >+</button>
             <button
               onClick={() => applyZoom(-0.5)}
-              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 flex items-center justify-center text-sm font-bold transition-colors"
+              className="w-7 h-7 rounded-lg glass-btn-secondary flex items-center justify-center text-sm font-bold transition-colors !p-0"
               title="Zoom Out"
             >−</button>
             <button
               onClick={resetZoom}
-              className="px-2 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 text-[10px] font-semibold tracking-wide transition-colors"
+              className="px-2 h-7 rounded-lg glass-btn-secondary text-[10px] font-semibold tracking-wide transition-colors !p-0"
               title="Reset Zoom"
             >{zoomLevel.toFixed(1)}×</button>
             <button
               onClick={() => setIsFullscreen(true)}
-              className="px-2 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 text-[10px] font-semibold tracking-wide transition-colors"
+              className="px-2 h-7 rounded-lg text-[10px] font-semibold tracking-wide transition-colors !p-0"
+              style={{
+                background: "rgba(6, 182, 212, 0.1)",
+                border: "1px solid rgba(6, 182, 212, 0.3)",
+                color: "#06b6d4"
+              }}
               title="Fullscreen map"
             >⛶ Fullscreen</button>
           </div>
 
           <div
-            className="w-full relative aspect-[2/1] bg-slate-950/65 rounded-xl border border-white/5 overflow-hidden mt-0"
+            className="w-full relative aspect-[2/1] rounded-xl overflow-hidden mt-0"
             onWheel={handleWheel}
             onMouseDown={handlePanStart}
             onMouseMove={handlePanMove}
             onMouseUp={handlePanEnd}
             onMouseLeave={handlePanEnd}
-            style={{ cursor: zoomLevel > 1 ? (isPanning ? "grabbing" : "grab") : "default" }}
+            style={{
+              cursor: zoomLevel > 1 ? (isPanning ? "grabbing" : "grab") : "default",
+              border: "1.5px solid var(--border-color)",
+              background: "var(--map-ocean-end)"
+            }}
             onClick={() => { if (!isPanning) setIsFullscreen(true); }}
           >
             <svg
               ref={svgRef}
               viewBox="0 0 1000 500"
               className="w-full h-full select-none"
-              style={{ background: "linear-gradient(180deg, #03050f 0%, #050a1a 100%)" }}
+              style={{ background: "var(--map-ocean-end)" }}
             >
               <defs>
                 <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                  <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.025)" strokeWidth="0.5" />
+                  <path d="M 50 0 L 0 0 0 50" fill="none" stroke="var(--map-grid)" strokeWidth="0.5" />
                 </pattern>
                 <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                   <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#22d3ee" />
@@ -391,8 +400,8 @@ const WorldMap = () => {
                   <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
                 </filter>
                 <radialGradient id="oceanGrad" cx="50%" cy="50%" r="70%">
-                  <stop offset="0%" stopColor="#0a1628" />
-                  <stop offset="100%" stopColor="#030810" />
+                  <stop offset="0%" stopColor="var(--map-ocean-start)" />
+                  <stop offset="100%" stopColor="var(--map-ocean-end)" />
                 </radialGradient>
               </defs>
               {/* ── Zoom / Pan transform group ── */}
@@ -404,33 +413,33 @@ const WorldMap = () => {
 
               {/* ── Continent Outlines (improved shapes) ── */}
               {/* North America */}
-              <polygon points="65,55 130,40 200,50 255,65 295,85 300,125 285,175 260,215 235,240 195,255 170,250 140,220 100,195 70,160 50,120 55,85" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="65,55 130,40 200,50 255,65 295,85 300,125 285,175 260,215 235,240 195,255 170,250 140,220 100,195 70,160 50,120 55,85" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Central America */}
-              <polygon points="210,235 235,240 240,265 220,280 200,270 195,255" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="210,235 235,240 240,265 220,280 200,270 195,255" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
               {/* South America */}
-              <polygon points="230,280 270,265 310,275 345,310 355,350 345,400 320,440 285,455 255,450 235,410 215,365 205,320 215,290" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="230,280 270,265 310,275 345,310 355,350 345,400 320,440 285,455 255,450 235,410 215,365 205,320 215,290" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Europe */}
-              <polygon points="430,50 490,40 520,55 555,50 580,60 590,85 575,100 555,110 530,115 510,130 490,125 470,135 455,130 440,110 430,90" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="430,50 490,40 520,55 555,50 580,60 590,85 575,100 555,110 530,115 510,130 490,125 470,135 455,130 440,110 430,90" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Scandinavia */}
-              <polygon points="480,35 510,25 540,30 560,50 540,60 510,55 485,50" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="480,35 510,25 540,30 560,50 540,60 510,55 485,50" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
               {/* Iberian */}
-              <polygon points="430,115 460,105 475,125 465,145 440,150 425,135" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="430,115 460,105 475,125 465,145 440,150 425,135" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
               {/* Russia / Central Asia */}
-              <polygon points="540,30 640,20 780,25 860,40 890,65 870,90 840,95 810,80 780,75 740,70 700,75 660,85 620,80 580,85 550,75 535,60" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="540,30 640,20 780,25 860,40 890,65 870,90 840,95 810,80 780,75 740,70 700,75 660,85 620,80 580,85 550,75 535,60" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Africa */}
-              <polygon points="455,145 520,140 565,145 595,155 615,190 620,235 610,285 590,330 555,370 520,385 490,380 465,360 445,325 435,285 430,240 435,200 445,170" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="455,145 520,140 565,145 595,155 615,190 620,235 610,285 590,330 555,370 520,385 490,380 465,360 445,325 435,285 430,240 435,200 445,170" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Middle East / Arabian Peninsula */}
-              <polygon points="560,135 610,130 640,145 650,170 635,195 605,200 575,190 555,170 550,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="560,135 610,130 640,145 650,170 635,195 605,200 575,190 555,170 550,150" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
               {/* Indian Subcontinent */}
-              <polygon points="650,135 700,130 730,140 740,165 735,200 720,230 700,250 680,255 660,235 645,205 640,175 645,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="650,135 700,130 730,140 740,165 735,200 720,230 700,250 680,255 660,235 645,205 640,175 645,150" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Southeast Asia */}
-              <polygon points="750,175 800,170 840,185 850,210 830,230 800,235 770,225 745,205 740,190" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="750,175 800,170 840,185 850,210 830,230 800,235 770,225 745,205 740,190" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* Japan */}
-              <polygon points="850,130 870,120 890,130 885,160 870,175 855,165 840,145" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="850,130 870,120 890,130 885,160 870,175 855,165 840,145" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
               {/* Australia */}
-              <polygon points="775,325 840,315 900,330 920,360 910,400 880,420 840,415 800,400 775,370 765,345" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
+              <polygon points="775,325 840,315 900,330 920,360 910,400 880,420 840,415 800,400 775,370 765,345" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
               {/* New Zealand */}
-              <polygon points="930,370 945,360 955,380 945,400 930,395" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+              <polygon points="930,370 945,360 955,380 945,400 930,395" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
 
               {/* ── Migration Trace Lines ── */}
               {migrations.map((mig) => {
@@ -510,13 +519,13 @@ const WorldMap = () => {
                       y={coord.y + (labelOffsets[c]?.dy ?? -14)}
                       textAnchor="middle"
                       dominantBaseline={((labelOffsets[c]?.dy ?? -14) > 0) ? "hanging" : "auto"}
-                      fill={isSelected ? "#22d3ee" : "#e2e8f0"}
+                      fill={isSelected ? "#22d3ee" : "var(--map-text-bright)"}
                       fontSize="10.5"
                       fontWeight="700"
                       letterSpacing="0.2"
                       className="pointer-events-none"
                       paintOrder="stroke"
-                      stroke="#000"
+                      stroke="var(--map-ocean-end)"
                       strokeWidth="3"
                       strokeLinejoin="round"
                     >
@@ -570,23 +579,25 @@ const WorldMap = () => {
               // compute approximate pixel position from svg viewBox
               return (
                 <div
-                  className="absolute z-20 bg-slate-950/95 border border-white/15 p-3 rounded-xl pointer-events-none text-xs w-52 shadow-glass"
+                  className="absolute z-20 glass-panel p-3 pointer-events-none text-xs w-52"
                   style={{
                     left: `${Math.min(75, (coord.x / 1000) * 100)}%`,
                     top: `${Math.min(65, (coord.y / 500) * 100)}%`,
                     transform: "translate(-50%, -110%)",
+                    background: "var(--map-legend-bg)",
+                    borderColor: "var(--border-color)"
                   }}
                 >
-                  <div className="font-extrabold text-slate-100 flex items-center justify-between mb-1.5">
+                  <div className="font-extrabold flex items-center justify-between mb-1.5" style={{ color: "var(--text-primary)" }}>
                     <span>{hoveredCity}</span>
-                    <span className="text-[10px] text-slate-500 uppercase">{CITY_COORDS[hoveredCity].country}</span>
+                    <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>{CITY_COORDS[hoveredCity].country}</span>
                   </div>
-                  <div className="space-y-1 border-t border-white/5 pt-2 font-mono text-[10px] text-slate-300">
-                    <div className="flex justify-between"><span>Agents:</span>      <span className="text-slate-100 font-bold">{stats.activeCount}</span></div>
-                    <div className="flex justify-between"><span>Workforce:</span>   <span className="text-slate-100 font-bold">{stats.totalEmployees.toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span>Revenue:</span>     <span className="text-emerald-400">${Math.round(stats.totalRev).toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span>Health Index:</span><span className="text-cyan-400 font-bold">{stats.health.toFixed(1)}%</span></div>
-                    <div className="flex justify-between"><span>Avg Risk:</span>    <span className={stats.avgRisk > 50 ? "text-rose-400 font-bold" : "text-slate-400"}>{stats.avgRisk.toFixed(1)}%</span></div>
+                  <div className="space-y-1 border-t pt-2 font-mono text-[10px]" style={{ borderColor: "var(--border-color)", color: "var(--text-secondary)" }}>
+                    <div className="flex justify-between"><span>Agents:</span>      <span className="font-bold" style={{ color: "var(--text-primary)" }}>{stats.activeCount}</span></div>
+                    <div className="flex justify-between"><span>Workforce:</span>   <span className="font-bold" style={{ color: "var(--text-primary)" }}>{stats.totalEmployees.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>Revenue:</span>     <span className="text-emerald-500 font-bold">${Math.round(stats.totalRev).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>Health Index:</span><span className="text-cyan-500 font-bold">{stats.health.toFixed(1)}%</span></div>
+                    <div className="flex justify-between"><span>Avg Risk:</span>    <span className={stats.avgRisk > 50 ? "text-rose-500 font-bold" : ""} style={stats.avgRisk <= 50 ? { color: "var(--text-muted)" } : {}}>{stats.avgRisk.toFixed(1)}%</span></div>
                   </div>
                 </div>
               );
@@ -597,23 +608,23 @@ const WorldMap = () => {
         {/* ── Fullscreen Modal Overlay ── */}
         {isFullscreen && (
           <div
-            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col"
-            style={{ top: 0, left: 0, right: 0, bottom: 0 }}
+            className="fixed inset-0 z-[9999] flex flex-col"
+            style={{ top: 0, left: 0, right: 0, bottom: 0, background: "var(--bg-primary)" }}
           >
             {/* Close bar */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0">
+            <div className="flex items-center justify-between px-6 py-3 border-b shrink-0" style={{ borderColor: "var(--border-color)", background: "var(--bg-card-solid)" }}>
               <div className="flex items-center gap-3">
-                <Map className="text-cyan-400" size={20} />
-                <span className="text-slate-200 font-extrabold text-sm uppercase tracking-widest">INTERACTIVE GLOBAL LEDGER MAP</span>
-                <span className="text-slate-500 text-xs">{allDisplayCities.length} hubs · {businesses.length} agents</span>
+                <Map className="text-cyan-500" size={20} />
+                <span className="font-bold text-sm uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>INTERACTIVE GLOBAL LEDGER MAP</span>
+                <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{allDisplayCities.length} hubs · {businesses.length} agents</span>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => applyZoom(0.5)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-bold transition-colors">+</button>
-                <button onClick={() => applyZoom(-0.5)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-bold transition-colors">−</button>
-                <button onClick={resetZoom} className="px-3 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 text-xs font-semibold">{zoomLevel.toFixed(1)}×</button>
+                <button onClick={() => applyZoom(0.5)} className="w-8 h-8 rounded-lg glass-btn-secondary font-bold transition-colors !p-0">+</button>
+                <button onClick={() => applyZoom(-0.5)} className="w-8 h-8 rounded-lg glass-btn-secondary font-bold transition-colors !p-0">−</button>
+                <button onClick={resetZoom} className="px-3 h-8 rounded-lg glass-btn-secondary text-xs font-semibold !p-0">{zoomLevel.toFixed(1)}×</button>
                 <button
                   onClick={() => { setIsFullscreen(false); resetZoom(); }}
-                  className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 flex items-center justify-center transition-colors ml-1"
+                  className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-500 hover:bg-rose-500/25 flex items-center justify-center transition-colors ml-1 !p-0"
                   title="Close fullscreen (ESC)"
                 >
                   <X size={16} />
@@ -633,11 +644,11 @@ const WorldMap = () => {
               <svg
                 viewBox="0 0 1000 500"
                 className="w-full h-full select-none"
-                style={{ background: "linear-gradient(180deg, #03050f 0%, #050a1a 100%)" }}
+                style={{ background: "var(--map-ocean-end)" }}
               >
                 <defs>
                   <pattern id="grid-fs" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.025)" strokeWidth="0.5" />
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="var(--map-grid)" strokeWidth="0.5" />
                   </pattern>
                   <marker id="arrow-fs" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                     <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#22d3ee" />
@@ -647,28 +658,28 @@ const WorldMap = () => {
                     <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
                   </filter>
                   <radialGradient id="oceanGrad-fs" cx="50%" cy="50%" r="70%">
-                    <stop offset="0%" stopColor="#0a1628" />
-                    <stop offset="100%" stopColor="#030810" />
+                    <stop offset="0%" stopColor="var(--map-ocean-start)" />
+                    <stop offset="100%" stopColor="var(--map-ocean-end)" />
                   </radialGradient>
                 </defs>
                 <g transform={`translate(${panX}, ${panY}) scale(${zoomLevel}) translate(${-(1000 / 2) * (1 - 1 / zoomLevel)}, ${-(500 / 2) * (1 - 1 / zoomLevel)})`}>
                   <rect width="1000" height="500" fill="url(#oceanGrad-fs)" />
                   <rect width="1000" height="500" fill="url(#grid-fs)" />
                   {/* Continents */}
-                  <polygon points="65,55 130,40 200,50 255,65 295,85 300,125 285,175 260,215 235,240 195,255 170,250 140,220 100,195 70,160 50,120 55,85" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="210,235 235,240 240,265 220,280 200,270 195,255" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
-                  <polygon points="230,280 270,265 310,275 345,310 355,350 345,400 320,440 285,455 255,450 235,410 215,365 205,320 215,290" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="430,50 490,40 520,55 555,50 580,60 590,85 575,100 555,110 530,115 510,130 490,125 470,135 455,130 440,110 430,90" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="480,35 510,25 540,30 560,50 540,60 510,55 485,50" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
-                  <polygon points="430,115 460,105 475,125 465,145 440,150 425,135" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
-                  <polygon points="540,30 640,20 780,25 860,40 890,65 870,90 840,95 810,80 780,75 740,70 700,75 660,85 620,80 580,85 550,75 535,60" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="455,145 520,140 565,145 595,155 615,190 620,235 610,285 590,330 555,370 520,385 490,380 465,360 445,325 435,285 430,240 435,200 445,170" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="560,135 610,130 640,145 650,170 635,195 605,200 575,190 555,170 550,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
-                  <polygon points="650,135 700,130 730,140 740,165 735,200 720,230 700,250 680,255 660,235 645,205 640,175 645,150" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="750,175 800,170 840,185 850,210 830,230 800,235 770,225 745,205 740,190" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="850,130 870,120 890,130 885,160 870,175 855,165 840,145" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
-                  <polygon points="775,325 840,315 900,330 920,360 910,400 880,420 840,415 800,400 775,370 765,345" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="1" />
-                  <polygon points="930,370 945,360 955,380 945,400 930,395" fill="rgba(255,255,255,0.018)" stroke="rgba(100,180,255,0.09)" strokeWidth="0.8" />
+                  <polygon points="65,55 130,40 200,50 255,65 295,85 300,125 285,175 260,215 235,240 195,255 170,250 140,220 100,195 70,160 50,120 55,85" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="210,235 235,240 240,265 220,280 200,270 195,255" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
+                  <polygon points="230,280 270,265 310,275 345,310 355,350 345,400 320,440 285,455 255,450 235,410 215,365 205,320 215,290" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="430,50 490,40 520,55 555,50 580,60 590,85 575,100 555,110 530,115 510,130 490,125 470,135 455,130 440,110 430,90" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="480,35 510,25 540,30 560,50 540,60 510,55 485,50" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
+                  <polygon points="430,115 460,105 475,125 465,145 440,150 425,135" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
+                  <polygon points="540,30 640,20 780,25 860,40 890,65 870,90 840,95 810,80 780,75 740,70 700,75 660,85 620,80 580,85 550,75 535,60" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="455,145 520,140 565,145 595,155 615,190 620,235 610,285 590,330 555,370 520,385 490,380 465,360 445,325 435,285 430,240 435,200 445,170" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="560,135 610,130 640,145 650,170 635,195 605,200 575,190 555,170 550,150" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
+                  <polygon points="650,135 700,130 730,140 740,165 735,200 720,230 700,250 680,255 660,235 645,205 640,175 645,150" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="750,175 800,170 840,185 850,210 830,230 800,235 770,225 745,205 740,190" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="850,130 870,120 890,130 885,160 870,175 855,165 840,145" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
+                  <polygon points="775,325 840,315 900,330 920,360 910,400 880,420 840,415 800,400 775,370 765,345" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="1" />
+                  <polygon points="930,370 945,360 955,380 945,400 930,395" fill="var(--map-continent-fill)" stroke="var(--map-continent-stroke)" strokeWidth="0.8" />
                   {/* Migration lines */}
                   {migrations.map((mig) => {
                     const fromC = safeCoord(mig.from);
@@ -716,13 +727,13 @@ const WorldMap = () => {
                           y={coord.y + lOff.dy}
                           textAnchor="middle"
                           dominantBaseline={lOff.dy > 0 ? "hanging" : "auto"}
-                          fill={isSelected ? "#22d3ee" : "#e2e8f0"}
+                          fill={isSelected ? "#22d3ee" : "var(--map-text-bright)"}
                           fontSize="10.5"
                           fontWeight="700"
                           letterSpacing="0.2"
                           className="pointer-events-none"
                           paintOrder="stroke"
-                          stroke="#000"
+                          stroke="var(--map-ocean-end)"
                           strokeWidth="3"
                           strokeLinejoin="round"
                         >{c}</text>
@@ -759,17 +770,24 @@ const WorldMap = () => {
                 const stats = getCityStats(hoveredCity);
                 if (!coord) return null;
                 return (
-                  <div className="absolute z-20 bg-slate-950/95 border border-white/15 p-3 rounded-xl pointer-events-none text-xs w-52 shadow-glass"
-                    style={{ left: `${Math.min(75, (coord.x / 1000) * 100)}%`, top: `${Math.min(65, (coord.y / 500) * 100)}%`, transform: "translate(-50%, -110%)" }}
+                  <div className="absolute z-20 glass-panel p-3 pointer-events-none text-xs w-52"
+                    style={{
+                      left: `${Math.min(75, (coord.x / 1000) * 100)}%`,
+                      top: `${Math.min(65, (coord.y / 500) * 100)}%`,
+                      transform: "translate(-50%, -110%)",
+                      background: "var(--map-legend-bg)",
+                      borderColor: "var(--border-color)",
+                      color: "var(--text-primary)"
+                    }}
                   >
-                    <div className="font-extrabold text-slate-100 flex items-center justify-between mb-1.5">
+                    <div className="font-extrabold flex items-center justify-between mb-1.5" style={{ color: "var(--text-primary)" }}>
                       <span>{hoveredCity}</span>
-                      <span className="text-[10px] text-slate-500 uppercase">{CITY_COORDS[hoveredCity].country}</span>
+                      <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>{CITY_COORDS[hoveredCity].country}</span>
                     </div>
-                    <div className="space-y-1 border-t border-white/5 pt-2 font-mono text-[10px] text-slate-300">
-                      <div className="flex justify-between"><span>Agents:</span><span className="text-slate-100 font-bold">{stats.activeCount}</span></div>
-                      <div className="flex justify-between"><span>Revenue:</span><span className="text-emerald-400">${Math.round(stats.totalRev).toLocaleString()}</span></div>
-                      <div className="flex justify-between"><span>Health:</span><span className="text-cyan-400 font-bold">{stats.health.toFixed(1)}%</span></div>
+                    <div className="space-y-1 border-t pt-2 font-mono text-[10px]" style={{ borderColor: "var(--border-color)", color: "var(--text-secondary)" }}>
+                      <div className="flex justify-between"><span>Agents:</span><span className="font-bold" style={{ color: "var(--text-primary)" }}>{stats.activeCount}</span></div>
+                      <div className="flex justify-between"><span>Revenue:</span><span className="text-emerald-500 font-bold">${Math.round(stats.totalRev).toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Health:</span><span className="text-cyan-500 font-bold">{stats.health.toFixed(1)}%</span></div>
                     </div>
                   </div>
                 );
@@ -780,21 +798,21 @@ const WorldMap = () => {
 
         {/* ─── Hub Telemetry Panel ──────────────────────────────── */}
         <GlassCard className="flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 pb-3 border-b border-white/5 mb-3">
+          <div className="flex items-center gap-2 pb-3 mb-3 border-b" style={{ borderColor: "var(--border-color)" }}>
             <Compass className="text-purple-400 animate-spin" style={{ animationDuration: "6s" }} size={18} />
-            <h4 className="text-sm font-extrabold uppercase text-slate-200 tracking-wider">Hub Telemetry</h4>
+            <h4 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>Hub Telemetry</h4>
           </div>
 
           {/* Selected Business Panel */}
           {selectedBusiness && (
-            <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-xl text-xs space-y-2">
+            <div className="mb-4 p-3 rounded-xl text-xs space-y-2" style={{ background: "var(--bg-hover)", border: "1.5px solid var(--border-color)" }}>
               <div className="flex items-center justify-between">
-                <span className="font-extrabold text-slate-100">{selectedBusiness.name}</span>
+                <span className="font-bold" style={{ color: "var(--text-primary)" }}>{selectedBusiness.name}</span>
                 <button onClick={() => setSelectedBusiness(null)} className="text-slate-500 hover:text-slate-200">
                   <X size={14} />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+              <div className="grid grid-cols-2 gap-2 text-[11px]" style={{ color: "var(--text-secondary)" }}>
                 <div className="flex items-center gap-1"><span style={{ color: INDUSTRY_COLORS[selectedBusiness.industry] || "#94a3b8" }}>●</span>{selectedBusiness.industry}</div>
                 <div>{selectedBusiness.city}, {selectedBusiness.country}</div>
                 <div className="flex items-center gap-1"><Users size={10} />{selectedBusiness.employees} staff</div>
@@ -806,16 +824,16 @@ const WorldMap = () => {
           )}
 
           {!selectedCity ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-500 text-xs">
-              <Info size={36} className="mb-2 text-slate-600" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-xs" style={{ color: "var(--text-muted)" }}>
+              <Info size={36} className="mb-2" style={{ color: "var(--text-faint)" }} />
               <span>Select any glowing node on the world map to view detailed regional business catalog and migration flows.</span>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto pr-1 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-slate-200">{selectedCity}</h3>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  <h3 className="text-base font-black" style={{ color: "var(--text-primary)" }}>{selectedCity}</h3>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                     {CITY_COORDS[selectedCity]?.country || ""} · {CITY_COORDS[selectedCity]?.region || ""}
                   </p>
                 </div>
@@ -825,48 +843,52 @@ const WorldMap = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Active Agents</span>
-                  <p className="text-lg font-bold text-slate-200 mt-0.5">{activeCityData?.activeCount || 0}</p>
+                <div className="rounded-xl p-3 border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Active Agents</span>
+                  <p className="text-lg font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{activeCityData?.activeCount || 0}</p>
                 </div>
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Health Score</span>
-                  <p className="text-lg font-bold text-cyan-400 mt-0.5">{(activeCityData?.health || 0).toFixed(1)}%</p>
+                <div className="rounded-xl p-3 border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Health Score</span>
+                  <p className="text-lg font-bold mt-0.5 text-cyan-500">{(activeCityData?.health || 0).toFixed(1)}%</p>
                 </div>
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Workforce</span>
-                  <p className="text-base font-bold text-slate-300 mt-0.5">{(activeCityData?.totalEmployees || 0).toLocaleString()}</p>
+                <div className="rounded-xl p-3 border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Workforce</span>
+                  <p className="text-base font-bold mt-0.5" style={{ color: "var(--text-secondary)" }}>{(activeCityData?.totalEmployees || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Avg Risk</span>
-                  <p className={`text-base font-bold mt-0.5 ${(activeCityData?.avgRisk || 0) > 50 ? "text-rose-400" : "text-slate-300"}`}>
+                <div className="rounded-xl p-3 border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Avg Risk</span>
+                  <p className={`text-base font-bold mt-0.5 ${(activeCityData?.avgRisk || 0) > 50 ? "text-rose-500" : ""}`} style={!(activeCityData?.avgRisk > 50) ? { color: "var(--text-secondary)" } : {}}>
                     {(activeCityData?.avgRisk || 0).toFixed(1)}%
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h5 className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Active Corporations</h5>
+                <h5 className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Active Corporations</h5>
                 {activeCityBizs.length === 0 ? (
-                  <p className="text-xs text-slate-600">No active businesses in this hub.</p>
+                  <p className="text-xs" style={{ color: "var(--text-faint)" }}>No active businesses in this hub.</p>
                 ) : (
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                     {activeCityBizs.map((b) => (
                       <div
                         key={b.id}
                         onClick={() => setSelectedBusiness(b)}
-                        className={`p-2 border rounded-xl flex items-center justify-between text-xs cursor-pointer transition-colors ${selectedBusiness?.id === b.id ? "bg-purple-500/15 border-purple-500/30" : "bg-white/2 border-white/5 hover:bg-white/5"}`}
+                        className="p-2 border rounded-xl flex items-center justify-between text-xs cursor-pointer transition-colors"
+                        style={selectedBusiness?.id === b.id
+                          ? { background: "rgba(168,85,247,0.12)", borderColor: "rgba(168,85,247,0.30)" }
+                          : { background: "var(--bg-hover)", borderColor: "var(--border-color)" }
+                        }
                       >
                         <div>
-                          <p className="font-bold text-slate-300">{b.name}</p>
+                          <p className="font-bold" style={{ color: "var(--text-primary)" }}>{b.name}</p>
                           <div className="flex items-center gap-1 mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full" style={{ background: INDUSTRY_COLORS[b.industry] || "#94a3b8" }} />
-                            <span className="text-[9px] text-slate-500 uppercase font-semibold">{b.industry}</span>
+                            <span className="text-[9px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>{b.industry}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-slate-300">{b.employees} workers</p>
-                          <span className="text-[9px] text-emerald-400">${Math.round(b.revenue || 0).toLocaleString()}</span>
+                          <p className="font-bold" style={{ color: "var(--text-secondary)" }}>{b.employees} workers</p>
+                          <span className="text-[9px] text-emerald-500 font-bold">${Math.round(b.revenue || 0).toLocaleString()}</span>
                         </div>
                       </div>
                     ))}
@@ -880,25 +902,26 @@ const WorldMap = () => {
 
       {/* ─── Migration Vectors ──────────────────────────────────── */}
       <GlassCard>
-        <h4 className="text-sm font-extrabold uppercase text-slate-300 tracking-wider mb-3">Recent Migration Vectors</h4>
+        <h4 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-primary)" }}>Recent Migration Vectors</h4>
         <div className="space-y-2 text-xs">
           {migrations.length === 0 ? (
-            <p className="text-slate-500 text-center py-6">No recent migrations. Advance the simulation timeline to trigger relocations.</p>
+            <p className="text-center py-6" style={{ color: "var(--text-muted)" }}>No recent migrations. Advance the simulation timeline to trigger relocations.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {migrations.map((mig) => (
                 <div
                   key={mig.id}
-                  className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between hover:bg-white/8 transition-colors"
+                  className="p-3 rounded-xl flex items-center justify-between border transition-all"
+                  style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}
                 >
                   <div>
-                    <span className="font-bold text-cyan-400">{mig.agent}</span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Corporate Relocation</p>
+                    <span className="font-bold text-cyan-500">{mig.agent}</span>
+                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>Corporate Relocation</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-300 text-xs font-semibold">{mig.from}</span>
-                    <span className="text-slate-500">➜</span>
-                    <span className="text-cyan-400 text-xs font-bold">{mig.to}</span>
+                    <span className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>{mig.from}</span>
+                    <span style={{ color: "var(--text-faint)" }}>➜</span>
+                    <span className="text-cyan-500 text-xs font-bold">{mig.to}</span>
                   </div>
                 </div>
               ))}

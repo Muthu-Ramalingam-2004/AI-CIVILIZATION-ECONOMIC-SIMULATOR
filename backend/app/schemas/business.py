@@ -12,7 +12,7 @@ class BusinessBase(BaseModel):
     growth_rate: float = Field(0.05)
     ai_strategy: str = Field("moderate_growth")
     risk_level: float = Field(10.0, ge=0.0, le=100.0)
-    capital: float = Field(50000.0, ge=0.0)
+    capital: float = Field(50000.0)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
