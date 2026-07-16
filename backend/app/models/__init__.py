@@ -4,3 +4,5 @@ from app.models.business import Business
 from app.models.history import SimulationHistory
 from app.models.log import SystemLog
 from app.models.notification import Notification
+from app.models.password_reset import PasswordReset
+

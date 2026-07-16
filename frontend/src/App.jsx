@@ -9,6 +9,8 @@ import PredictionDashboard from "./components/PredictionDashboard";
 import WorldMap from "./components/WorldMap";
 import Recommendations from "./components/Recommendations";
 import AdminPanel from "./components/AdminPanel";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 /* Map admin sub-routes to AdminPanel tab ids */
 const ADMIN_TAB_MAP = {
@@ -26,6 +28,21 @@ function App() {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  // Sync state with back/forward browser navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateTo = (path) => {
+    window.history.pushState({}, "", path);
+    setCurrentPath(path);
+  };
 
   /* When user logs in, set sensible default tab */
   useEffect(() => {
@@ -53,8 +70,16 @@ function App() {
     }
   };
 
+  if (currentPath === "/reset-password") {
+    return <ResetPassword navigateTo={navigateTo} />;
+  }
+
+  if (currentPath === "/forgot-password") {
+    return <ForgotPassword navigateTo={navigateTo} />;
+  }
+
   if (!user) {
-    return <Login />;
+    return <Login navigateTo={navigateTo} />;
   }
 
   return (

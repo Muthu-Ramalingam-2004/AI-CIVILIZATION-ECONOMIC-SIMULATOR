@@ -6,7 +6,7 @@ import {
   Sun, Moon, UserCircle2, ShieldCheck, Eye, EyeOff
 } from "lucide-react";
 
-const Login = () => {
+const Login = ({ navigateTo }) => {
   const { login, register } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -254,6 +254,20 @@ const Login = () => {
                 </button>
               </div>
             </div>
+
+            {/* Forgot Password Link */}
+            {navigateTo && mode === "login" && (
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => navigateTo("/forgot-password")}
+                  className="text-xs font-semibold cursor-pointer hover:underline"
+                  style={{ color: "var(--text-muted)", background: "transparent", border: "none", padding: 0 }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"
