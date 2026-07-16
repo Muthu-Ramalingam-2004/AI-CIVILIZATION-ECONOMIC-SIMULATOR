@@ -25,8 +25,11 @@ try:
     print(f"Database connection verified: {db_url.split('@')[-1] if '@' in db_url else db_url}")
 except Exception as e:
     print(f"Warning: Database connection failed for: {db_url}. Error: {e}", file=sys.stderr)
-    print("Warning: Falling back to local SQLite database: sqlite:///./simulator.db", file=sys.stderr)
-    db_url = "sqlite:///./simulator.db"
+    db_url = settings.DATABASE_URL
+    if not db_url.startswith("sqlite"):
+        from app.core.config import DEFAULT_DB_PATH
+        db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+    print(f"Warning: Falling back to local SQLite database: {db_url}", file=sys.stderr)
     connect_args = {"check_same_thread": False}
     engine = create_engine(
         db_url,

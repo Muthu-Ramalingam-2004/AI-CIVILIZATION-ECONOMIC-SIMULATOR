@@ -244,7 +244,7 @@ class SimulationEngine:
                     layoff_count = random.randint(1, max(2, int(biz.employees * 0.25)))
                     layoff_count = min(layoff_count, biz.employees - 1)
                     biz.employees -= layoff_count
-                    biz.expenses -= layoff_count * random.uniform(2000.0, 3800.0) # savings
+                    biz.expenses = max(800.0, biz.expenses - layoff_count * random.uniform(2000.0, 3800.0)) # savings
                     biz.risk_level = min(100.0, biz.risk_level + 2.0)
                     log_event(db, f"{biz.name} in {biz.city} laid off {layoff_count} employees to reduce operational overhead.", "WARNING", "simulation")
 

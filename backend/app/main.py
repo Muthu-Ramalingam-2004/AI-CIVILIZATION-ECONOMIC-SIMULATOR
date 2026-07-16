@@ -6,48 +6,126 @@ from app.api import auth, businesses, simulation, predictions, reports
 from app.models.user import User
 from app.core.security import get_password_hash
 
-# Create SQLAlchemy Database Tables if they do not exist
-Base.metadata.create_all(bind=engine)
-
-def _seed_default_admin():
-    """Create a default admin account (admin / admin123) if none exists."""
-    from sqlalchemy import inspect
+def verify_and_initialize_database():
+    """Verify database integrity, print startup metrics, and seed if data is missing."""
+    import os
+    from sqlalchemy import inspect, text
+    from app.models.user import User
+    from app.models.business import Business
+    from app.models.history import SimulationHistory
+    from app.models.notification import Notification
+    from app.models.log import SystemLog
     
-    # 11. Print the database path being used at startup.
-    db_path = settings.DATABASE_URL
-    print(f"[Startup] Database URL/path being used: {db_path}")
+    db_url = settings.DATABASE_URL
+    db_path = ""
+    if db_url.startswith("sqlite:///"):
+        db_path = db_url[10:]
+    elif db_url.startswith("sqlite://"):
+        db_path = db_url[9:]
+    else:
+        db_path = db_url
 
-    # 12. Print whether the users table exists.
-    inspector = inspect(engine)
-    users_exist = "users" in inspector.get_table_names()
-    print(f"[Startup] Users table exists: {users_exist}")
+    # Normalize Windows drive letter format
+    if db_path.startswith("/") and len(db_path) > 2 and db_path[2] == ":":
+        db_path = db_path[1:]
 
-    if users_exist:
-        db = next(get_db())
-        try:
-            # 7 & 14. Check whether the first admin user exists and do not duplicate.
-            admin_user = db.query(User).filter(User.username == "admin").first()
-            if not admin_user:
-                # 8 & 9. Automatically create default admin if no admin exists, with hashed password.
-                admin = User(
-                    username="admin",
-                    email="admin@example.com",
-                    hashed_password=get_password_hash("admin123"),
-                    role="admin",
-                    is_active=True,
-                )
-                db.add(admin)
-                db.commit()
-            
-            # 13. Print the total number of users.
+    db_exists_before = os.path.exists(db_path) if db_path else False
+
+    # 1. Create tables if they do not exist
+    Base.metadata.create_all(bind=engine)
+
+    # 2. Run PRAGMA integrity check
+    integrity_ok = False
+    integrity_msg = "Unknown"
+    try:
+        with engine.connect() as conn:
+            integrity_msg = conn.execute(text("PRAGMA integrity_check;")).scalar()
+            integrity_ok = (integrity_msg == "ok")
+    except Exception as e:
+        integrity_msg = str(e)
+
+    # 3. Retrieve counts and perform seeding
+    total_users = 0
+    total_businesses = 0
+    total_simulation_records = 0
+    total_reports = 0
+    total_notifications = 0
+
+    db = next(get_db())
+    try:
+        # Check and seed default admin account if users table is empty
+        total_users = db.query(User).count()
+        if total_users == 0:
+            admin = User(
+                username="admin",
+                email="admin@example.com",
+                hashed_password=get_password_hash("admin123"),
+                role="admin",
+                is_active=True,
+            )
+            db.add(admin)
+            db.commit()
             total_users = db.query(User).count()
-            print(f"[Startup] Total number of users in database: {total_users}")
-        except Exception:
-            db.rollback()
-        finally:
-            db.close()
+            print("[Startup] Seeded default admin user (admin / admin123)")
 
-_seed_default_admin()
+        # Check and seed businesses / simulation history if empty
+        total_businesses = db.query(Business).count()
+        if total_businesses == 0:
+            from app.services.simulator import seed_initial_data
+            seed_initial_data(db)
+            total_businesses = db.query(Business).count()
+            print("[Startup] Seeded initial civilization datasets.")
+
+        # Database self-healing: fix any corrupt fields that violate schema constraints
+        corrupt_businesses = db.query(Business).filter(
+            (Business.expenses < 0.0) | 
+            (Business.revenue < 0.0) | 
+            (Business.risk_level < 0.0) | 
+            (Business.risk_level > 100.0) | 
+            (Business.employees < 1)
+        ).all()
+        if corrupt_businesses:
+            print(f"[Startup] Self-healing: Found {len(corrupt_businesses)} business records violating schema constraints. Correcting...")
+            for biz in corrupt_businesses:
+                if biz.expenses < 0.0:
+                    biz.expenses = 800.0
+                if biz.revenue < 0.0:
+                    biz.revenue = 1000.0
+                if biz.risk_level < 0.0:
+                    biz.risk_level = 0.0
+                elif biz.risk_level > 100.0:
+                    biz.risk_level = 100.0
+                if biz.employees < 1:
+                    biz.employees = 1
+            db.commit()
+            total_businesses = db.query(Business).count()
+            print("[Startup] Self-healing complete.")
+
+        total_simulation_records = db.query(SimulationHistory).count()
+        total_notifications = db.query(Notification).count()
+        total_reports = db.query(SystemLog).filter(SystemLog.message.like("%Report%")).count()
+
+    except Exception as e:
+        db.rollback()
+        print(f"[Startup Error] Failed to read database stats: {e}")
+    finally:
+        db.close()
+
+    # 4. Print Startup Logs
+    print("==================================================")
+    print("         AI CIVILIZATION STARTUP SYSTEM           ")
+    print("==================================================")
+    print(f"Database Path:             {db_path}")
+    print(f"Database Exists:           {db_exists_before}")
+    print(f"Database Integrity:        {'PASS' if integrity_ok else f'FAIL ({integrity_msg})'}")
+    print(f"Total Users:               {total_users}")
+    print(f"Total Businesses:          {total_businesses}")
+    print(f"Total Simulation Records:  {total_simulation_records}")
+    print(f"Total Reports:             {total_reports}")
+    print(f"Total Notifications:       {total_notifications}")
+    print("==================================================")
+
+verify_and_initialize_database()
 
 
 app = FastAPI(

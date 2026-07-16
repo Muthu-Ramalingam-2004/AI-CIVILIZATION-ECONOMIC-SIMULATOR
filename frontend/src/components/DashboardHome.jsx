@@ -70,7 +70,7 @@ const DashboardHome = () => {
       await fetchData();
     } catch (err) {
       console.error("Error running simulation", err);
-      alert(err.response?.data?.detail || "Simulation step failed");
+      alert(err.response?.data?.detail || err.message || "Simulation step failed");
     } finally {
       setSimulating(false);
     }

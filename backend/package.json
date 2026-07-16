@@ -1,0 +1,8 @@
+{
+  "name": "ai-civilization-economic-simulator-backend-redirect",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo ============================================================ && echo ERROR: You are running the dev command inside the backend folder! && echo To start the frontend, run: && echo   cd frontend && echo   npm run dev && echo To start the backend, run: && echo   python -m uvicorn app.main:app --reload && echo ============================================================ && exit 1"
+  }
+}
