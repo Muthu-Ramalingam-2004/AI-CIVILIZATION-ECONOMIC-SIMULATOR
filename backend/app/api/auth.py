@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token, decode_access_token, create_password_reset_token, verify_password_reset_token
 from app.models.user import User
 from app.models.password_reset import PasswordReset
@@ -177,6 +178,13 @@ def create_user(
 
 @router.post("/forgot-password")
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    # Check if SMTP configuration is set up
+    if not settings.SMTP_HOST or not settings.SMTP_PORT or not settings.SMTP_USERNAME or not settings.SMTP_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email service is not configured."
+        )
+
     # 1. Search for any user with this email (admin or regular user)
     user = db.query(User).filter(User.email == req.email).first()
     if not user:

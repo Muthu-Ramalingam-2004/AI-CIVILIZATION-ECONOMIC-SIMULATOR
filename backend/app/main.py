@@ -21,11 +21,11 @@ def verify_and_initialize_database():
     }
     missing_vars = [k for k, v in smtp_vars.items() if not v]
     if missing_vars:
-        error_msg = f"CRITICAL STARTUP ERROR: The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Please configure them to enable the password reset system."
+        warning_msg = f"WARNING: The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Password reset email delivery will return 'Email service is not configured.' until they are set."
         print("\n" + "=" * 80)
-        print(error_msg)
+        print(warning_msg)
         print("=" * 80 + "\n")
-        raise ValueError(error_msg)
+
 
     from sqlalchemy import inspect, text
     from app.models.user import User
