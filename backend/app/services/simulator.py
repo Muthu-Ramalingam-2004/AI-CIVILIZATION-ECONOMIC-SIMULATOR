@@ -174,8 +174,12 @@ class SimulationEngine:
             # Compute health scores for all cities
             city_health = {city: cls.calculate_city_health(db, city) for city in CITIES}
             
+            log_event(db, f"Step {current_step}: Updating {len(active_businesses)} active business agents...", "INFO", "simulation")
+            
             # 1. Update each business agent
             for biz in active_businesses:
+                if not biz.is_active:
+                    continue
                 biz.age += 1
                 
                 # Financial adjustment based on strategy
@@ -354,7 +358,13 @@ class SimulationEngine:
                 log_event(db, f"New independent AI startup spawned: {new_name} in {city}.", "INFO", "startup")
             
             # Recalculate global metrics
-            db.commit() # commit changes for this month to query accurate numbers
+            log_event(db, f"Step {current_step}: Committing monthly agent updates to database...", "INFO", "simulation")
+            try:
+                db.commit() # commit changes for this month to query accurate numbers
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Database commit failed during simulation agent updates at step {current_step}: {e}")
+                raise e
             
             active_businesses = db.query(Business).filter(Business.is_active == True).all()
             total_active = len(active_businesses)
@@ -381,7 +391,7 @@ class SimulationEngine:
                 # Estimate unemployment rate fluctuation
                 # If businesses grew, hiring reduces unemployment. If they collapsed, it increases.
                 prev_history = db.query(SimulationHistory).filter(SimulationHistory.step_number == current_step - 1).first()
-                if prev_history and prev_history.total_employees > 0:
+                if prev_history and prev_history.total_employees is not None and prev_history.total_employees > 0:
                     employee_delta = (total_employees - prev_history.total_employees) / prev_history.total_employees
                     unemployment_rate = max(1.5, min(30.0, unemployment_rate - (employee_delta * 12.0)))
                 else:
@@ -418,6 +428,14 @@ class SimulationEngine:
             if unemployment_rate > 12.0:
                 trigger_notification(db, "Employment Decline Detected", f"Unemployment rate has surged to {unemployment_rate:.1f}% as corporations consolidate or bankrupt.", "employment_decline")
             
-            db.commit()
+            log_event(db, f"Step {current_step}: Committing simulation step history snapshot...", "INFO", "simulation")
+            try:
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Database commit failed during simulation snapshot at step {current_step}: {e}")
+                raise e
+            
+            log_event(db, f"Finished simulation month step {current_step}. Businesses active: {total_active}, bankruptcies: {bankrupt_count}, mergers: {merger_count}, startups: {startup_count}.", "INFO", "simulation")
 
         return current_step

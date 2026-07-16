@@ -33,9 +33,19 @@ def run_simulation(
         )
     
     # Run simulation
-    new_step = SimulationEngine.run_simulation(db, req.months)
-    log_event(db, f"Simulation advanced by {req.months} month(s) to Step {new_step} by user '{current_user.username}'.", "INFO", "simulation")
-    return {"message": f"Successfully simulated {req.months} month(s)", "current_step": new_step}
+    try:
+        new_step = SimulationEngine.run_simulation(db, req.months)
+        log_event(db, f"Simulation advanced by {req.months} month(s) to Step {new_step} by user '{current_user.username}'.", "INFO", "simulation")
+        return {"message": f"Successfully simulated {req.months} month(s)", "current_step": new_step}
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"Error running simulation: {e}\n{tb}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Simulation failed: {str(e)}"
+        )
 
 @router.get("/history", response_model=List[SimulationHistoryResponse])
 def get_simulation_history(db: Session = Depends(get_db)):

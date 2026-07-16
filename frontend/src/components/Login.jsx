@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import {
   TrendingUp, Mail, Lock, User, ShieldAlert,
-  Sun, Moon, UserCircle2, ShieldCheck,
+  Sun, Moon, UserCircle2, ShieldCheck, Eye, EyeOff
 } from "lucide-react";
 
 const Login = () => {
@@ -18,11 +18,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* Auto-fill admin credentials hint */
   const handleRoleSelect = (r) => {
     setRole(r);
     setError("");
+    setShowPassword(false);
     if (r === "admin" && mode === "login") {
       setUsername("admin");
     } else if (r === "user" && username === "admin") {
@@ -123,7 +125,7 @@ const Login = () => {
               <button
                 key={t.key}
                 type="button"
-                onClick={() => { setMode(t.key); setError(""); setSuccess(""); }}
+                onClick={() => { setMode(t.key); setError(""); setSuccess(""); setShowPassword(false); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   mode === t.key
                     ? "text-white bg-gradient-to-r from-purple-600 to-cyan-600 shadow-sm"
@@ -233,13 +235,23 @@ const Login = () => {
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--text-faint)" }} />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="glass-input-icon"
+                  style={{ paddingRight: "2.75rem" }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg cursor-pointer transition-colors text-slate-400 hover:text-slate-200 flex items-center justify-center"
+                  style={{ color: "var(--text-muted)", background: "transparent", border: "none" }}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 
