@@ -43,6 +43,10 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = str(DEFAULT_DB_PATH.parent / ".env")
         extra = "ignore"
-
+        
 settings = Settings()
 
+print("SMTP_USERNAME =", settings.SMTP_USERNAME)
+print("SMTP_PASSWORD =", "SET" if settings.SMTP_PASSWORD else "NOT SET")
+print("SMTP_FROM_EMAIL =", settings.SMTP_FROM_EMAIL)
+print("FRONTEND_URL =", settings.FRONTEND_URL)
