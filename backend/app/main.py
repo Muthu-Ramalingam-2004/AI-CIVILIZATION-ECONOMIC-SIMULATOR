@@ -7,8 +7,26 @@ from app.models.user import User
 from app.core.security import get_password_hash
 
 def verify_and_initialize_database():
-    """Verify database integrity, print startup metrics, and seed if data is missing."""
+    """Verify database integrity, check SMTP variables, print startup metrics, and seed if data is missing."""
     import os
+    
+    # Check that required SMTP and reset settings are present in .env
+    smtp_vars = {
+        "SMTP_HOST": settings.SMTP_HOST,
+        "SMTP_PORT": settings.SMTP_PORT,
+        "SMTP_USERNAME": settings.SMTP_USERNAME,
+        "SMTP_PASSWORD": settings.SMTP_PASSWORD,
+        "SMTP_FROM_EMAIL": settings.SMTP_FROM_EMAIL,
+        "FRONTEND_URL": settings.FRONTEND_URL
+    }
+    missing_vars = [k for k, v in smtp_vars.items() if not v]
+    if missing_vars:
+        error_msg = f"CRITICAL STARTUP ERROR: The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Please configure them to enable the password reset system."
+        print("\n" + "=" * 80)
+        print(error_msg)
+        print("=" * 80 + "\n")
+        raise ValueError(error_msg)
+
     from sqlalchemy import inspect, text
     from app.models.user import User
     from app.models.business import Business

@@ -1,12 +1,13 @@
 import smtplib
+import sys
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
 
-def send_reset_password_email(email: str, token: str) -> bool:
+def send_reset_password_email(email: str, token: str) -> None:
     reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
     
-    # Professional HTML email layout
+    # HTML content
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -114,10 +115,7 @@ def send_reset_password_email(email: str, token: str) -> bool:
     print(f"[PASSWORD RESET LINK GENERATED FOR {email}]")
     print(f"Link: {reset_link}")
     print("=" * 60)
-
-    if not settings.SMTP_USERNAME or not settings.SMTP_PASSWORD:
-        print("[SMTP Log] SMTP credentials are not set in .env. Skipping real email delivery.")
-        return True
+    sys.stdout.flush()
 
     try:
         msg = MIMEMultipart('alternative')
@@ -127,13 +125,53 @@ def send_reset_password_email(email: str, token: str) -> bool:
 
         msg.attach(MIMEText(html_content, 'html'))
 
-        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+        # Connect to SMTP
+        print(f"[SMTP Connect] Connecting to {settings.SMTP_HOST}:{settings.SMTP_PORT}...")
+        sys.stdout.flush()
+        
+        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15)
+        
+        print("[SMTP Connect] Sending EHLO...")
+        sys.stdout.flush()
+        server.ehlo()
+        
+        print("[SMTP Connect] Starting TLS...")
+        sys.stdout.flush()
         server.starttls()
-        server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+        
+        print("[SMTP Connect] Sending EHLO after TLS...")
+        sys.stdout.flush()
+        server.ehlo()
+        
+        print(f"[SMTP Auth] Logging in as {settings.SMTP_USERNAME}...")
+        sys.stdout.flush()
+        try:
+            server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+        except smtplib.SMTPAuthenticationError as auth_err:
+            auth_msg = str(auth_err)
+            custom_msg = f"SMTP Authentication failed: {auth_msg}"
+            if "gmail" in settings.SMTP_HOST.lower():
+                custom_msg += " (Gmail App Password might be required. Please configure a 16-character App Password under your Google Account Security settings.)"
+            raise RuntimeError(custom_msg) from auth_err
+
+        print(f"[SMTP Send] Sending mail from {settings.SMTP_FROM_EMAIL} to {email}...")
+        sys.stdout.flush()
         server.sendmail(settings.SMTP_FROM_EMAIL, email, msg.as_string())
+        
+        print("[SMTP Quit] Closing connection...")
+        sys.stdout.flush()
         server.quit()
+        
         print(f"[SMTP Log] Reset email sent successfully to {email}")
-        return True
+        sys.stdout.flush()
+        
+    except smtplib.SMTPException as smtp_err:
+        err_msg = f"SMTP exception occurred: {smtp_err}"
+        print(f"[SMTP Error] {err_msg}", file=sys.stderr)
+        sys.stderr.flush()
+        raise RuntimeError(err_msg) from smtp_err
     except Exception as e:
-        print(f"[SMTP Error] Failed to send password reset email: {e}")
-        return False
+        err_msg = f"Failed to connect or send email: {e}"
+        print(f"[SMTP Error] {err_msg}", file=sys.stderr)
+        sys.stderr.flush()
+        raise RuntimeError(err_msg) from e

@@ -213,7 +213,20 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     db.commit()
     
     # 5. Send reset email
-    send_reset_password_email(req.email, token)
+    try:
+        send_reset_password_email(req.email, token)
+    except Exception as e:
+        # Rollback token insertion if email fails to send
+        db.delete(password_reset)
+        db.commit()
+        
+        # Log failure in system logs
+        log_event(db, f"Password reset email delivery failed for: {req.email}. Error: {str(e)}", "ERROR", "auth")
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send email: {str(e)}"
+        )
     
     # 6. Log reset request event in system logs
     log_event(db, f"Password reset requested for email: {req.email}", "INFO", "auth")
