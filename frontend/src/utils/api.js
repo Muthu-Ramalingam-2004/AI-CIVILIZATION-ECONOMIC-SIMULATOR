@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location.hostname ? `${window.location.protocol}//${window.location.hostname}:8000/api/v1` : "http://localhost:8000/api/v1");
 
-if (!API_BASE_URL) {
-  console.error("VITE_API_URL is not set! Please check your environment configuration.");
+if (!import.meta.env.VITE_API_URL) {
+  console.log("VITE_API_URL not set, using fallback: " + API_BASE_URL);
 }
 
 const api = axios.create({

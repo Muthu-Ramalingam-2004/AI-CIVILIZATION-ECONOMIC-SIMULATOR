@@ -232,7 +232,7 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
         log_event(db, f"Password reset email delivery failed for: {req.email}. Error: {email_error_msg}", "WARNING", "auth")
         print(f"\n[DEVELOPMENT FALLBACK] Password reset email failed to send.")
         print(f"To reset password, open this URL in your browser:")
-        print(f"http://localhost:5173/reset-password?token={token}\n")
+        print(f"{settings.FRONTEND_URL}/reset-password?token={token}\n")
         import sys
         sys.stdout.flush()
 

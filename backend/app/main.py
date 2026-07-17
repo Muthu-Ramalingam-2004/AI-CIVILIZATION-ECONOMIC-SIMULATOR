@@ -87,7 +87,7 @@ def verify_and_initialize_database():
         if not admin_user:
             admin_user = User(
                 username="admin",
-                email="admin@civilization.local",
+                email="admin@civilization.org",
                 hashed_password=get_password_hash("admin123"),
                 role="admin",
                 is_active=True,
@@ -97,9 +97,9 @@ def verify_and_initialize_database():
             print("[Startup] Seeded default admin user (admin / admin123)")
         else:
             # Change username, email, password and ensure role/is_active only if not already initialized to default local values
-            if admin_user.email != "admin@civilization.local" or admin_user.username != "admin" or admin_user.role != "admin" or not admin_user.is_active:
+            if admin_user.email != "admin@civilization.org" or admin_user.username != "admin" or admin_user.role != "admin" or not admin_user.is_active:
                 admin_user.username = "admin"
-                admin_user.email = "admin@civilization.local"
+                admin_user.email = "admin@civilization.org"
                 admin_user.hashed_password = get_password_hash("admin123")
                 admin_user.role = "admin"
                 admin_user.is_active = True
