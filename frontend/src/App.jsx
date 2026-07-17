@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar";
@@ -11,77 +12,261 @@ import Recommendations from "./components/Recommendations";
 import AdminPanel from "./components/AdminPanel";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
+import NotFound from "./components/NotFound";
 
-/* Map admin sub-routes to AdminPanel tab ids */
-const ADMIN_TAB_MAP = {
-  admin:              "dashboard",
-  admin_users:        "users",
-  admin_businesses:   "businesses",
-  admin_simulation:   "simulation",
-  admin_map:          "map",
-  admin_analytics:    "analytics",
-  admin_recommend:    "recommendations",
-  admin_settings:     "settings",
+const TAB_TO_PATH = {
+  dashboard: "/dashboard",
+  businesses: "/businesses",
+  predictions: "/predictions",
+  map: "/map",
+  recommendations: "/recommendations",
+  admin: "/admin/dashboard",
+  admin_users: "/admin/users",
+  admin_businesses: "/admin/businesses",
+  admin_simulation: "/admin/simulation",
+  admin_map: "/admin/map",
+  admin_analytics: "/admin/analytics",
+  admin_recommend: "/admin/recommendations",
+  admin_settings: "/admin/settings",
+};
+
+const PATH_TO_TAB = {
+  "/dashboard": "dashboard",
+  "/businesses": "businesses",
+  "/predictions": "predictions",
+  "/map": "map",
+  "/recommendations": "recommendations",
+  "/admin/dashboard": "admin",
+  "/admin/users": "admin_users",
+  "/admin/businesses": "admin_businesses",
+  "/admin/simulation": "admin_simulation",
+  "/admin/map": "admin_map",
+  "/admin/analytics": "admin_analytics",
+  "/admin/recommendations": "admin_recommend",
+  "/admin/settings": "admin_settings",
 };
 
 function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [activeTab, setActiveTabState] = useState("dashboard");
 
-  // Sync state with back/forward browser navigation
+  // Sync activeTab highlight with the current pathname
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  const navigateTo = (path) => {
-    window.history.pushState({}, "", path);
-    setCurrentPath(path);
-  };
-
-  /* When user logs in, set sensible default tab */
-  useEffect(() => {
-    if (user?.role === "admin") {
-      setActiveTab("admin");
-    } else {
-      setActiveTab("dashboard");
+    const currentPath = location.pathname;
+    if (PATH_TO_TAB[currentPath]) {
+      setActiveTabState(PATH_TO_TAB[currentPath]);
+    } else if (currentPath.startsWith("/admin")) {
+      // If path is just /admin or /admin/, redirect to dashboard
+      if (currentPath === "/admin" || currentPath === "/admin/") {
+        navigate("/admin/dashboard", { replace: true });
+      }
     }
-  }, [user?.role]);
+  }, [location.pathname, navigate]);
 
-  const renderContent = () => {
-    /* Admin routes */
-    if (user?.role === "admin" && ADMIN_TAB_MAP[activeTab] !== undefined) {
-      return <AdminPanel initialTab={ADMIN_TAB_MAP[activeTab]} />;
-    }
-
-    /* User routes */
-    switch (activeTab) {
-      case "dashboard":       return <DashboardHome />;
-      case "businesses":      return <BusinessManagement />;
-      case "predictions":     return <PredictionDashboard />;
-      case "map":             return <WorldMap />;
-      case "recommendations": return <Recommendations />;
-      default:                return <DashboardHome />;
+  const handleTabChange = (tabId) => {
+    const path = TAB_TO_PATH[tabId];
+    if (path) {
+      navigate(path);
     }
   };
 
-  if (currentPath === "/reset-password") {
-    return <ResetPassword navigateTo={navigateTo} />;
+  // Loading guard for Auth initialization
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
-  if (currentPath === "/forgot-password") {
-    return <ForgotPassword navigateTo={navigateTo} />;
-  }
+  // Wrapper for Auth Protected Route
+  const ProtectedRoute = ({ children }) => {
+    if (!user) {
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+    return children;
+  };
 
-  if (!user) {
-    return <Login navigateTo={navigateTo} />;
-  }
+  // Wrapper for Admin Only Route
+  const AdminProtectedRoute = ({ children }) => {
+    if (!user) {
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+    if (user.role !== "admin") {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return children;
+  };
 
+  return (
+    <Routes>
+      {/* Public auth routes */}
+      <Route
+        path="/login"
+        element={
+          user ? (
+            <Navigate to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} replace />
+          ) : (
+            <Login navigateTo={navigate} />
+          )
+        }
+      />
+      <Route path="/forgot-password" element={<ForgotPassword navigateTo={navigate} />} />
+      <Route path="/reset-password" element={<ResetPassword navigateTo={navigate} />} />
+
+      {/* User protected routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Navigate to={user?.role === "admin" ? "/admin/dashboard" : "/dashboard"} replace />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <DashboardHome />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/businesses"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <BusinessManagement />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/predictions"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <PredictionDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/map"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <WorldMap />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recommendations"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <Recommendations />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin protected routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="dashboard" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="users" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/businesses"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="businesses" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/simulation"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="simulation" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/map"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="map" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="analytics" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/recommendations"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="recommendations" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <AdminPanel initialTab="settings" />
+            </Layout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      {/* 404 Route */}
+      <Route path="*" element={<NotFound navigateTo={navigate} />} />
+    </Routes>
+  );
+}
+
+const Layout = ({ children, activeTab, setActiveTab, theme }) => {
   return (
     <div className="flex min-h-screen" data-theme={theme}>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -89,10 +274,10 @@ function App() {
         className="flex-1 overflow-y-auto"
         style={{ padding: "1.5rem 2rem", maxWidth: "1440px", margin: "0 auto", width: "100%" }}
       >
-        {renderContent()}
+        {children}
       </main>
     </div>
   );
-}
+};
 
 export default App;

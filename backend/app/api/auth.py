@@ -221,23 +221,29 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     db.commit()
     
     # 5. Send reset email
+    email_sent = True
+    email_error_msg = ""
     try:
         send_reset_password_email(req.email, token)
     except Exception as e:
-        # Rollback token insertion if email fails to send
-        db.delete(password_reset)
-        db.commit()
-        
-        # Log failure in system logs
-        log_event(db, f"Password reset email delivery failed for: {req.email}. Error: {str(e)}", "ERROR", "auth")
-        
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to send email: {str(e)}"
-        )
-    
+        email_sent = False
+        email_error_msg = str(e)
+        # Log failure in system logs and stdout
+        log_event(db, f"Password reset email delivery failed for: {req.email}. Error: {email_error_msg}", "WARNING", "auth")
+        print(f"\n[DEVELOPMENT FALLBACK] Password reset email failed to send.")
+        print(f"To reset password, open this URL in your browser:")
+        print(f"http://localhost:5173/reset-password?token={token}\n")
+        import sys
+        sys.stdout.flush()
+
     # 6. Log reset request event in system logs
     log_event(db, f"Password reset requested for email: {req.email}", "INFO", "auth")
+    
+    if not email_sent:
+        return {
+            "message": "Password reset token generated. Email delivery failed, but you can retrieve the link from the server logs.",
+            "warning": f"Email delivery failed: {email_error_msg}"
+        }
     
     return {"message": "Password reset email sent."}
 
@@ -299,4 +305,9 @@ def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
     log_event(db, f"Password successfully reset for email: {email}", "INFO", "auth")
     
     return {"message": "Password updated successfully."}
+
+@router.post("/logout")
+def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    log_event(db, f"User '{current_user.username}' logged out successfully.", "INFO", "auth")
+    return {"message": "Logged out successfully."}
 

@@ -1,3 +1,5 @@
+import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -5,6 +7,13 @@ from app.core.database import engine, Base, get_db
 from app.api import auth, businesses, simulation, predictions, reports
 from app.models.user import User
 from app.core.security import get_password_hash
+
+# Configure basic logging format
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("app.main")
 
 def verify_and_initialize_database():
     """Verify database integrity, check SMTP variables, print startup metrics, and seed if data is missing."""
@@ -21,10 +30,8 @@ def verify_and_initialize_database():
     }
     missing_vars = [k for k, v in smtp_vars.items() if not v]
     if missing_vars:
-        warning_msg = f"WARNING: The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Password reset email delivery will return 'Email service is not configured.' until they are set."
-        print("\n" + "=" * 80)
-        print(warning_msg)
-        print("=" * 80 + "\n")
+        warning_msg = f"The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Password reset email delivery will return 'Email service is not configured.' until they are set."
+        logger.warning(warning_msg)
 
 
     from sqlalchemy import inspect, text
@@ -71,20 +78,35 @@ def verify_and_initialize_database():
 
     db = next(get_db())
     try:
-        # Check and seed default admin account if users table is empty
-        total_users = db.query(User).count()
-        if total_users == 0:
-            admin = User(
+        # Check if an admin user exists
+        # Look for the user with username="admin" first, then fallback to any admin role user
+        admin_user = db.query(User).filter(User.username == "admin").first()
+        if not admin_user:
+            admin_user = db.query(User).filter(User.role == "admin").first()
+            
+        if not admin_user:
+            admin_user = User(
                 username="admin",
-                email="admin@example.com",
+                email="admin@civilization.local",
                 hashed_password=get_password_hash("admin123"),
                 role="admin",
                 is_active=True,
             )
-            db.add(admin)
+            db.add(admin_user)
             db.commit()
-            total_users = db.query(User).count()
             print("[Startup] Seeded default admin user (admin / admin123)")
+        else:
+            # Change username, email, password and ensure role/is_active only if not already initialized to default local values
+            if admin_user.email != "admin@civilization.local" or admin_user.username != "admin" or admin_user.role != "admin" or not admin_user.is_active:
+                admin_user.username = "admin"
+                admin_user.email = "admin@civilization.local"
+                admin_user.hashed_password = get_password_hash("admin123")
+                admin_user.role = "admin"
+                admin_user.is_active = True
+                db.commit()
+                print("[Startup] Configured default credentials on existing admin user")
+        
+        total_users = db.query(User).count()
 
         # Check and seed businesses / simulation history if empty
         total_businesses = db.query(Business).count()
@@ -141,28 +163,48 @@ def verify_and_initialize_database():
     print(f"Total Simulation Records:  {total_simulation_records}")
     print(f"Total Reports:             {total_reports}")
     print(f"Total Notifications:       {total_notifications}")
+    print("--------------------------------------------------")
+    print("ADMIN ACCOUNT READY")
+    print("Username: admin")
+    print("Password: admin123")
     print("==================================================")
+    import sys
+    sys.stdout.flush()
 
-verify_and_initialize_database()
-
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup Events
+    logger.info("Initializing economic simulator application database...")
+    try:
+        verify_and_initialize_database()
+        logger.info("Database initialization completed successfully.")
+    except Exception as err:
+        logger.error(f"Database initialization failed: {err}")
+    yield
+    # Shutdown Events
+    logger.info("Shutting down economic simulator application...")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Economic simulation platform populated by autonomous AI agents.",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
-# Set CORS origins
-# Allow all origins for local deployment testing flexibility
+# Load allowed CORS origins from settings.FRONTEND_URL
+allowed_origins = [
+    origin.strip() for origin in settings.FRONTEND_URL.split(",") if origin.strip()
+]
+# Ensure standard local dev origins are present for local fallback
+for local_origin in ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]:
+    if local_origin not in allowed_origins:
+        allowed_origins.append(local_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000"
-    ],
+    allow_origins=allowed_origins,
     allow_origin_regex="https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?",
     allow_credentials=True,
     allow_methods=["*"],

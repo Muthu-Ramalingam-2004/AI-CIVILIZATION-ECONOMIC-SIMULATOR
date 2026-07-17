@@ -31,7 +31,7 @@ class Settings(BaseSettings):
 
     def __init__(self, **values):
         super().__init__(**values)
-        db_url = os.getenv("DATABASE_URL", "")
+        db_url = self.DATABASE_URL
         if not db_url or "sqlite" in db_url:
             # Force sqlite to use absolute path
             abs_db_path = DEFAULT_DB_PATH.resolve().as_posix()
