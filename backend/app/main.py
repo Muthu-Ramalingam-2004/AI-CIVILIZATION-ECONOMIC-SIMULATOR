@@ -218,6 +218,13 @@ app.include_router(simulation.router, prefix=f"{settings.API_V1_STR}/simulation"
 app.include_router(predictions.router, prefix=f"{settings.API_V1_STR}/predictions", tags=["AI Predictions"])
 app.include_router(reports.router, prefix=f"{settings.API_V1_STR}/reports", tags=["Reports"])
 
+@app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
+def health_check():
+    return {
+        "status": "healthy",
+        "app_name": settings.PROJECT_NAME
+    }
+
 @app.get("/")
 def read_root():
     return {
