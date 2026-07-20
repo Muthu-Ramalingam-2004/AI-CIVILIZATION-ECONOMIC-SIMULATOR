@@ -17,7 +17,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    DATABASE_URL: str = ""
+    DATABASE_URL: str = os.getenv(
+    "DATABASE_URL",
+    f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+)
 
     # SMTP Settings for Password Reset
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -29,15 +32,6 @@ class Settings(BaseSettings):
     RESET_TOKEN_SECRET: str = os.getenv("RESET_TOKEN_SECRET", "supersecretresettokenkey-ai-civilization-economic-simulator")
     RESET_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("RESET_TOKEN_EXPIRE_MINUTES", "15"))
 
-    def __init__(self, **values):
-        super().__init__(**values)
-        db_url = self.DATABASE_URL
-        if not db_url or "sqlite" in db_url:
-            # Force sqlite to use absolute path
-            abs_db_path = DEFAULT_DB_PATH.resolve().as_posix()
-            self.DATABASE_URL = f"sqlite:///{abs_db_path}"
-        else:
-            self.DATABASE_URL = db_url
     
     class Config:
         case_sensitive = True
