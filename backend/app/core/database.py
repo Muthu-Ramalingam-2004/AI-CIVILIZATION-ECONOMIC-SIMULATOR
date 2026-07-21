@@ -5,6 +5,9 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
 db_url = settings.DATABASE_URL
+if not db_url:
+    from app.core.config import DEFAULT_DB_PATH
+    db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
