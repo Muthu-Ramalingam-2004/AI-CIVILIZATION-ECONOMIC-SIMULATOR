@@ -17,10 +17,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    DATABASE_URL: str = os.getenv(
-    "DATABASE_URL",
-    f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
-)
+    DATABASE_URL: str = os.getenv("DATABASE_URL") or f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
 
     # SMTP Settings for Password Reset
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
