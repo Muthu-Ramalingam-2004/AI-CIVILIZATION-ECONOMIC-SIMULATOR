@@ -202,6 +202,10 @@ for local_origin in ["http://localhost:5173", "http://127.0.0.1:5173", "http://l
     if local_origin not in allowed_origins:
         allowed_origins.append(local_origin)
 
+vercel_origin = "https://ai-civilization-economic-simulator.vercel.app"
+if vercel_origin not in allowed_origins:
+    allowed_origins.append(vercel_origin)
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
