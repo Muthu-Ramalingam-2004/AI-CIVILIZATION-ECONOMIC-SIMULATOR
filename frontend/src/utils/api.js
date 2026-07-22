@@ -1,10 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location.hostname ? `${window.location.protocol}//${window.location.hostname}:8000/api/v1` : "https://ai-civilization-economic-simulator.onrender.com/api/v1");
-
-if (!import.meta.env.VITE_API_URL) {
-  console.log("VITE_API_URL not set, using fallback: " + API_BASE_URL);
-}
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://ai-civilization-economic-simulator.onrender.com/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
