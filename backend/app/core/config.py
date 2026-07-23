@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL") or f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
-
+    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
+ 
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     
     class Config:
@@ -27,5 +27,8 @@ class Settings(BaseSettings):
         extra = "ignore"
         
 settings = Settings()
+
+if not settings.DATABASE_URL:
+    raise ValueError("CRITICAL CONFIGURATION ERROR: DATABASE_URL environment variable is missing. Application startup aborted.")
 
 print("FRONTEND_URL =", settings.FRONTEND_URL)

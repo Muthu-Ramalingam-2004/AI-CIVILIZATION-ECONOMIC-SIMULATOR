@@ -5,10 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
-def resolve_db_url(url: Optional[str]) -> str:
-    if not url:
-        from app.core.config import DEFAULT_DB_PATH
-        return f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+def resolve_db_url(url: str) -> str:
     if url.startswith("sqlite://"):
         rest = url[9:]
         if rest.startswith("/"):
@@ -43,21 +40,8 @@ try:
         pass
     print(f"Database connection verified: {db_url.split('@')[-1] if '@' in db_url else db_url}")
 except Exception as e:
-    # If settings.DATABASE_URL is explicitly set to a non-SQLite string, fail loudly in production!
-    if settings.DATABASE_URL and not settings.DATABASE_URL.startswith("sqlite"):
-        print(f"CRITICAL DATABASE CONNECTION ERROR: {e}", file=sys.stderr)
-        raise e
-        
-    print(f"Warning: Database connection failed for: {db_url}. Error: {e}", file=sys.stderr)
-    from app.core.config import DEFAULT_DB_PATH
-    db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
-    print(f"Warning: Falling back to local SQLite database: {db_url}", file=sys.stderr)
-    connect_args = {"check_same_thread": False}
-    engine = create_engine(
-        db_url,
-        connect_args=connect_args,
-        pool_pre_ping=True
-    )
+    print(f"CRITICAL DATABASE CONNECTION ERROR: Failed to connect to {db_url}. Error: {e}", file=sys.stderr)
+    raise e
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
