@@ -11,7 +11,6 @@ import WorldMap from "./components/WorldMap";
 import Recommendations from "./components/Recommendations";
 import AdminPanel from "./components/AdminPanel";
 import ForgotPassword from "./components/ForgotPassword";
-import ResetPassword from "./components/ResetPassword";
 import NotFound from "./components/NotFound";
 
 const TAB_TO_PATH = {
@@ -115,7 +114,7 @@ function App() {
         }
       />
       <Route path="/forgot-password" element={<ForgotPassword navigateTo={navigate} />} />
-      <Route path="/reset-password" element={<ResetPassword navigateTo={navigate} />} />
+      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
 
       {/* User protected routes */}
       <Route

@@ -8,6 +8,15 @@ db_url = settings.DATABASE_URL
 if not db_url:
     from app.core.config import DEFAULT_DB_PATH
     db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+else:
+    if db_url.startswith("sqlite:///"):
+        path_str = db_url[10:]
+        # Check if path is relative (does not start with '/' and is not a Windows absolute path like 'C:/')
+        if not path_str.startswith("/") and not (len(path_str) > 1 and path_str[1] == ":"):
+            from app.core.config import BACKEND_DIR
+            absolute_path = (BACKEND_DIR / path_str).resolve().as_posix()
+            db_url = f"sqlite:///{absolute_path}"
+
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 

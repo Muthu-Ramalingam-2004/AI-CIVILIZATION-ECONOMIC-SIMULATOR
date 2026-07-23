@@ -26,9 +26,7 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
-
-class ResetPasswordRequest(BaseModel):
-    token: str
+    username_or_email: str
     new_password: str
+    confirm_password: str
 

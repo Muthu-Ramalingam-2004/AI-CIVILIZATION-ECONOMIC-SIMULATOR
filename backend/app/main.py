@@ -16,24 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger("app.main")
 
 def verify_and_initialize_database():
-    """Verify database integrity, check SMTP variables, print startup metrics, and seed if data is missing."""
+    """Verify database integrity, print startup metrics, and seed if data is missing."""
     import os
     
-    # Check that required SMTP and reset settings are present in .env
-    smtp_vars = {
-        "SMTP_HOST": settings.SMTP_HOST,
-        "SMTP_PORT": settings.SMTP_PORT,
-        "SMTP_USERNAME": settings.SMTP_USERNAME,
-        "SMTP_PASSWORD": settings.SMTP_PASSWORD,
-        "SMTP_FROM_EMAIL": settings.SMTP_FROM_EMAIL,
-        "FRONTEND_URL": settings.FRONTEND_URL
-    }
-    missing_vars = [k for k, v in smtp_vars.items() if not v]
-    if missing_vars:
-        warning_msg = f"The following SMTP/reset configuration variables are missing or empty in .env: {', '.join(missing_vars)}. Password reset email delivery will return 'Email service is not configured.' until they are set."
-        logger.warning(warning_msg)
-
-
     from sqlalchemy import inspect, text
     from app.models.user import User
     from app.models.business import Business
@@ -79,10 +64,7 @@ def verify_and_initialize_database():
     db = next(get_db())
     try:
         # Check if an admin user exists
-        # Look for the user with username="admin" first, then fallback to any admin role user
         admin_user = db.query(User).filter(User.username == "admin").first()
-        if not admin_user:
-            admin_user = db.query(User).filter(User.role == "admin").first()
             
         if not admin_user:
             admin_user = User(
@@ -97,8 +79,7 @@ def verify_and_initialize_database():
             print("[Startup] Seeded default admin user (admin / admin123)")
         else:
             # Change username, email, password and ensure role/is_active only if not already initialized to default local values
-            if admin_user.email != "admin@civilization.org" or admin_user.username != "admin" or admin_user.role != "admin" or not admin_user.is_active:
-                admin_user.username = "admin"
+            if admin_user.email != "admin@civilization.org" or admin_user.role != "admin" or not admin_user.is_active:
                 admin_user.email = "admin@civilization.org"
                 admin_user.hashed_password = get_password_hash("admin123")
                 admin_user.role = "admin"
