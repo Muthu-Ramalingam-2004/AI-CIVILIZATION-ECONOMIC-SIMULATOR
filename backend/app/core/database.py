@@ -1,16 +1,16 @@
 import sys
+from typing import Optional
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
-db_url = settings.DATABASE_URL
-if not db_url:
-    from app.core.config import DEFAULT_DB_PATH
-    db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
-else:
-    if db_url.startswith("sqlite://"):
-        rest = db_url[9:]
+def resolve_db_url(url: Optional[str]) -> str:
+    if not url:
+        from app.core.config import DEFAULT_DB_PATH
+        return f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+    if url.startswith("sqlite://"):
+        rest = url[9:]
         if rest.startswith("/"):
             path_str = rest[1:]
         else:
@@ -20,10 +20,12 @@ else:
         if not path_str.startswith("/") and not (len(path_str) > 1 and path_str[1] == ":"):
             from app.core.config import BACKEND_DIR
             absolute_path = (BACKEND_DIR / path_str).resolve().as_posix()
-            db_url = f"sqlite:///{absolute_path}"
+            return f"sqlite:///{absolute_path}"
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql://", 1)
+    return url
 
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+db_url = resolve_db_url(settings.DATABASE_URL)
 
 # Connect arguments (needed for SQLite check_same_thread)
 connect_args = {}
@@ -42,10 +44,8 @@ try:
     print(f"Database connection verified: {db_url.split('@')[-1] if '@' in db_url else db_url}")
 except Exception as e:
     print(f"Warning: Database connection failed for: {db_url}. Error: {e}", file=sys.stderr)
-    db_url = settings.DATABASE_URL
-    if not db_url.startswith("sqlite"):
-        from app.core.config import DEFAULT_DB_PATH
-        db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
+    from app.core.config import DEFAULT_DB_PATH
+    db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
     print(f"Warning: Falling back to local SQLite database: {db_url}", file=sys.stderr)
     connect_args = {"check_same_thread": False}
     engine = create_engine(

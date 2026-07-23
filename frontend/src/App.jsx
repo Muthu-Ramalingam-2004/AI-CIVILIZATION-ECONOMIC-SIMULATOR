@@ -267,11 +267,11 @@ function App() {
 
 const Layout = ({ children, activeTab, setActiveTab, theme }) => {
   return (
-    <div className="flex min-h-screen" data-theme={theme}>
+    <div className="flex min-h-screen flex-col lg:flex-row" data-theme={theme}>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main
-        className="flex-1 overflow-y-auto"
-        style={{ padding: "1.5rem 2rem", maxWidth: "1440px", margin: "0 auto", width: "100%" }}
+        className="flex-1 overflow-y-auto w-full px-4 py-6 md:px-8 md:py-6 pt-20 lg:pt-6"
+        style={{ maxWidth: "1440px", margin: "0 auto" }}
       >
         {children}
       </main>

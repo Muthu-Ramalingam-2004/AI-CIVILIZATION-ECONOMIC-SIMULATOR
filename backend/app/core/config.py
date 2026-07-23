@@ -19,16 +19,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL") or f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
 
-    # SMTP Settings for Password Reset
-    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
-    SMTP_USERNAME: Optional[str] = os.getenv("SMTP_USERNAME")
-    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
-    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@civilizationsimulator.com")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    RESET_TOKEN_SECRET: str = os.getenv("RESET_TOKEN_SECRET", "supersecretresettokenkey-ai-civilization-economic-simulator")
-    RESET_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("RESET_TOKEN_EXPIRE_MINUTES", "15"))
-
     
     class Config:
         case_sensitive = True
@@ -37,7 +28,4 @@ class Settings(BaseSettings):
         
 settings = Settings()
 
-print("SMTP_USERNAME =", settings.SMTP_USERNAME)
-print("SMTP_PASSWORD =", "SET" if settings.SMTP_PASSWORD else "NOT SET")
-print("SMTP_FROM_EMAIL =", settings.SMTP_FROM_EMAIL)
 print("FRONTEND_URL =", settings.FRONTEND_URL)

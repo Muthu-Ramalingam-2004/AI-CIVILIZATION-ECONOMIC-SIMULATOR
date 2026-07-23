@@ -1,8 +1,24 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://ai-civilization-economic-simulator.onrender.com/api/v1";
+const getApiBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.")
+    ) {
+      return `${window.location.protocol}//${hostname}:8000/api/v1`;
+    }
+  }
+  return (
+    import.meta.env.VITE_API_URL ||
+    "https://ai-civilization-economic-simulator.onrender.com/api/v1"
+  );
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

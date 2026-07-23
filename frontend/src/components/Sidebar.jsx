@@ -44,15 +44,43 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg cursor-pointer"
-        style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-color)", color: "var(--text-primary)" }}
-        aria-label="Toggle menu"
+      {/* Mobile Sticky Top Navbar */}
+      <header
+        className="lg:hidden fixed top-0 left-0 right-0 h-14 z-30 flex items-center justify-between px-4"
+        style={{
+          background: "var(--bg-sidebar)",
+          borderBottom: "1px solid var(--border-color)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+        }}
       >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-lg cursor-pointer flex items-center justify-center text-[var(--text-primary)]"
+            style={{ background: "transparent", border: "none" }}
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          <span className="font-extrabold text-sm tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+            CIVILIZATION SIM
+          </span>
+        </div>
+
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+          style={{
+            background: isAdmin
+              ? "linear-gradient(135deg,rgba(168,85,247,0.3),rgba(124,58,237,0.3))"
+              : "linear-gradient(135deg,rgba(6,182,212,0.25),rgba(37,99,235,0.25))",
+            border: "1px solid var(--border-color)",
+            color: isAdmin ? "#a855f7" : "#06b6d4",
+          }}
+        >
+          {user?.username?.[0]?.toUpperCase() || <User size={13} />}
+        </div>
+      </header>
 
       {/* Mobile overlay */}
       {isOpen && (

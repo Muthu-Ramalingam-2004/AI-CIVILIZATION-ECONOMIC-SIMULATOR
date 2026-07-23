@@ -312,31 +312,36 @@ const WorldMap = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* ─── SVG Map ─────────────────────────────────────────── */}
         <GlassCard className="xl:col-span-2 relative overflow-hidden flex flex-col p-4 gap-3">
-          {/* Legend */}
-          <div className="absolute top-6 left-6 z-10 glass-panel p-3 text-[11px] space-y-1.5" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block shadow-neon-cyan animate-pulse" />
-              <span style={{ color: "var(--map-text-bright)" }}>Economic Hotspot</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
-              <span style={{ color: "var(--map-text-bright)" }}>Active Business Hub</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="border-t border-dashed border-cyan-400 w-6 inline-block" />
-              <span style={{ color: "var(--map-text-bright)" }}>Migration Trace</span>
-            </div>
-            <div className="mt-1 pt-1 border-t text-[10px]" style={{ color: "var(--map-text-dim)", borderColor: "var(--border-color)" }}>Click any node to inspect</div>
-          </div>
-
-          {/* Industry legend */}
-          <div className="absolute top-6 right-6 z-10 glass-panel p-3 text-[10px] space-y-1" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
-            {Object.entries(INDUSTRY_COLORS).map(([ind, color]) => (
-              <div key={ind} className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full inline-block" style={{ background: color }} />
-                <span style={{ color: "var(--map-text-bright)" }}>{ind}</span>
+          {/* Responsive Map Legends Wrapper */}
+          <div className="flex flex-col sm:flex-row gap-3 md:absolute md:top-6 md:left-6 md:right-6 md:justify-between z-10 pointer-events-none mb-2 md:mb-0">
+            {/* Legend */}
+            <div className="glass-panel p-3 text-[11px] space-y-1.5 pointer-events-auto w-full md:w-auto" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block shadow-neon-cyan animate-pulse" />
+                <span style={{ color: "var(--map-text-bright)" }}>Economic Hotspot</span>
               </div>
-            ))}
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
+                <span style={{ color: "var(--map-text-bright)" }}>Active Business Hub</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="border-t border-dashed border-cyan-400 w-6 inline-block" />
+                <span style={{ color: "var(--map-text-bright)" }}>Migration Trace</span>
+              </div>
+              <div className="mt-1 pt-1 border-t text-[10px]" style={{ color: "var(--map-text-dim)", borderColor: "var(--border-color)" }}>Click any node to inspect</div>
+            </div>
+
+            {/* Industry legend */}
+            <div className="glass-panel p-3 text-[10px] space-y-1 pointer-events-auto w-full md:w-auto" style={{ background: "var(--map-legend-bg)", borderColor: "var(--border-color)" }}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-col gap-x-4 gap-y-1">
+                {Object.entries(INDUSTRY_COLORS).map(([ind, color]) => (
+                  <div key={ind} className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: color }} />
+                    <span style={{ color: "var(--map-text-bright)" }}>{ind}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* ── Zoom Controls ── */}
@@ -613,10 +618,13 @@ const WorldMap = () => {
           >
             {/* Close bar */}
             <div className="flex items-center justify-between px-6 py-3 border-b shrink-0" style={{ borderColor: "var(--border-color)", background: "var(--bg-card-solid)" }}>
-              <div className="flex items-center gap-3">
-                <Map className="text-cyan-500" size={20} />
-                <span className="font-bold text-sm uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>INTERACTIVE GLOBAL LEDGER MAP</span>
-                <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{allDisplayCities.length} hubs · {businesses.length} agents</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Map className="text-cyan-500 flex-shrink-0" size={20} />
+                <div>
+                  <span className="hidden sm:inline font-bold text-sm uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>INTERACTIVE GLOBAL LEDGER MAP</span>
+                  <span className="sm:hidden font-bold text-xs uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>GLOBAL MAP</span>
+                  <span className="hidden md:inline-block ml-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>{allDisplayCities.length} hubs · {businesses.length} agents</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => applyZoom(0.5)} className="w-8 h-8 rounded-lg glass-btn-secondary font-bold transition-colors !p-0">+</button>

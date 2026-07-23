@@ -164,7 +164,8 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
+    strict_slashes=False
 )
 
 # Load allowed CORS origins from settings.FRONTEND_URL
@@ -183,7 +184,7 @@ if vercel_origin not in allowed_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex="https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?",
+    allow_origin_regex="https?://(localhost|127\\.0\\.0\\.1|192\\.168\\.\\d+\\.\\d+|10\\.\\d+\\.\\d+\\.\\d+)(:\\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
