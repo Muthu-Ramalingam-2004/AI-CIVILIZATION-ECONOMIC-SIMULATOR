@@ -9,8 +9,13 @@ if not db_url:
     from app.core.config import DEFAULT_DB_PATH
     db_url = f"sqlite:///{DEFAULT_DB_PATH.resolve().as_posix()}"
 else:
-    if db_url.startswith("sqlite:///"):
-        path_str = db_url[10:]
+    if db_url.startswith("sqlite://"):
+        rest = db_url[9:]
+        if rest.startswith("/"):
+            path_str = rest[1:]
+        else:
+            path_str = rest
+        
         # Check if path is relative (does not start with '/' and is not a Windows absolute path like 'C:/')
         if not path_str.startswith("/") and not (len(path_str) > 1 and path_str[1] == ":"):
             from app.core.config import BACKEND_DIR

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
@@ -24,7 +25,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if username is None:
         raise credentials_exception
     
-    user = db.query(User).filter(User.username == username).first()
+    user = db.query(User).filter(func.lower(User.username) == func.lower(username.strip())).first()
     if user is None:
         raise credentials_exception
     return user
@@ -39,14 +40,17 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
 
 @router.post("/register", response_model=UserResponse)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    # Check if username or email exists
-    user_exists = db.query(User).filter(User.username == user_in.username).first()
+    username = user_in.username.strip()
+    email = user_in.email.strip()
+    
+    # Check if username or email exists case-insensitively
+    user_exists = db.query(User).filter(func.lower(User.username) == func.lower(username)).first()
     if user_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The username already exists in the system."
         )
-    email_exists = db.query(User).filter(User.email == user_in.email).first()
+    email_exists = db.query(User).filter(func.lower(User.email) == func.lower(email)).first()
     if email_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -59,8 +63,8 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
     hashed_pw = get_password_hash(user_in.password)
     user = User(
-        username=user_in.username,
-        email=user_in.email,
+        username=username,
+        email=email,
         hashed_password=hashed_pw,
         role=role,
         is_active=True
@@ -74,7 +78,8 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == form_data.username).first()
+    username = form_data.username.strip()
+    user = db.query(User).filter(func.lower(User.username) == func.lower(username)).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -196,9 +201,11 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pwd):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must contain at least one special character.")
 
-    # 3. Find user by username OR email
+    # 3. Find user by username OR email case-insensitively
+    username_or_email = req.username_or_email.strip()
     user = db.query(User).filter(
-        (User.username == req.username_or_email) | (User.email == req.username_or_email)
+        (func.lower(User.username) == func.lower(username_or_email)) | 
+        (func.lower(User.email) == func.lower(username_or_email))
     ).first()
     
     if not user:

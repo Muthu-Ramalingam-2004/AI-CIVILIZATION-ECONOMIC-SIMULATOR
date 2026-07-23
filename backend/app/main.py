@@ -26,20 +26,13 @@ def verify_and_initialize_database():
     from app.models.notification import Notification
     from app.models.log import SystemLog
     
-    db_url = settings.DATABASE_URL
     db_path = ""
-    if db_url.startswith("sqlite:///"):
-        db_path = db_url[10:]
-    elif db_url.startswith("sqlite://"):
-        db_path = db_url[9:]
+    if engine.url.drivername == "sqlite":
+        db_path = engine.url.database
     else:
-        db_path = db_url
+        db_path = str(engine.url)
 
-    # Normalize Windows drive letter format
-    if db_path.startswith("/") and len(db_path) > 2 and db_path[2] == ":":
-        db_path = db_path[1:]
-
-    db_exists_before = os.path.exists(db_path) if db_path else False
+    db_exists_before = os.path.exists(db_path) if (db_path and engine.url.drivername == "sqlite") else False
 
     # 1. Create tables if they do not exist
     Base.metadata.create_all(bind=engine)
