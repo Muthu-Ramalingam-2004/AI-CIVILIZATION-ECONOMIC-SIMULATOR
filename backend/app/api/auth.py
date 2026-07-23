@@ -222,7 +222,7 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     # 5. Log the password reset event
     log_event(db, f"Password successfully reset for user: {user.username}", "INFO", "auth")
 
-    return {"message": "Password updated successfully."}
+    return {"message": "Password updated successfully.", "username": user.username}
 
 @router.post("/logout")
 def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

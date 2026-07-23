@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import {
   TrendingUp, User, Lock, ShieldAlert, Sun, Moon,
   ArrowLeft, Loader2, CheckCircle2, Eye, EyeOff, Check, X
@@ -12,6 +13,7 @@ interface ForgotPasswordProps {
 
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigateTo }) => {
   const { theme, toggleTheme } = useTheme();
+  const { login } = useAuth();
   
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -71,12 +73,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigateTo }) => {
         confirm_password: confirmPassword
       });
       
-      setSuccess("Password updated successfully!");
+      setSuccess("Password updated successfully! Logging you in...");
       
-      // Redirect to login page after 2.5 seconds
-      setTimeout(() => {
-        navigateTo("/login");
-      }, 2500);
+      const actualUsername = res.data.username || usernameOrEmail;
+      await login(actualUsername, newPassword);
 
     } catch (err: any) {
       console.error("Error resetting password", err);
