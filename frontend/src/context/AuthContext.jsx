@@ -25,9 +25,15 @@ export const AuthProvider = ({ children }) => {
           }
         }).catch(err => {
           console.error("Failed to fetch current user details", err);
-          // Fallback to local session if backend is offline
-          const parsed = JSON.parse(savedAuth);
-          setUser({ username: parsed.username, role: parsed.role });
+          if (err.response && err.response.status === 401) {
+            localStorage.removeItem("auth");
+            setUser(null);
+            setToken(null);
+          } else {
+            // Fallback to local session if backend is offline
+            const parsed = JSON.parse(savedAuth);
+            setUser({ username: parsed.username, role: parsed.role });
+          }
         }).finally(() => {
           setLoading(false);
         });

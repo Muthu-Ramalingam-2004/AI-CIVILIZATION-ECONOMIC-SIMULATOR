@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -18,19 +18,37 @@ import re
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(request: Request, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    import sys
+    auth_header = request.headers.get("authorization")
+    print("----- get_current_user DEBUG -----", file=sys.stderr)
+    print(f"Raw Authorization Header: '{auth_header}'", file=sys.stderr)
+    print(f"Raw token received: '{token}'", file=sys.stderr)
+    sys.stderr.flush()
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     username = decode_access_token(token)
+    print(f"Decoded username from token: '{username}'", file=sys.stderr)
+    sys.stderr.flush()
+    
     if username is None:
+        print("ERROR: decode_access_token returned None", file=sys.stderr)
+        sys.stderr.flush()
         raise credentials_exception
     
     user = db.query(User).filter(func.lower(User.username) == func.lower(username.strip())).first()
     if user is None:
+        print(f"ERROR: No user found in DB for username '{username}'", file=sys.stderr)
+        sys.stderr.flush()
         raise credentials_exception
+        
+    print(f"SUCCESS: Found user '{user.username}' in DB with role '{user.role}'", file=sys.stderr)
+    print("----------------------------------", file=sys.stderr)
+    sys.stderr.flush()
     return user
 
 def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
