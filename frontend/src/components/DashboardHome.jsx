@@ -394,8 +394,8 @@ const DashboardHome = () => {
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'} />
                   <XAxis dataKey="name" stroke={theme === 'dark' ? '#94a3b8' : '#64748b'} fontSize={11} />
-                  <YAxis yAxisId="left" stroke={theme === 'dark' ? '#818cf8' : '#6366f1'} fontSize={11} />
-                  <YAxis yAxisId="right" orientation="right" stroke={theme === 'dark' ? '#34d399' : '#10b981'} fontSize={11} />
+                  <YAxis yAxisId="left" stroke="var(--chart-color-1)" fontSize={11} />
+                  <YAxis yAxisId="right" orientation="right" stroke="var(--chart-color-2)" fontSize={11} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: theme === 'dark' ? 'rgba(8,9,16,0.97)' : '#ffffff',
@@ -410,7 +410,7 @@ const DashboardHome = () => {
                     type="monotone"
                     dataKey="revenue"
                     name="Avg Revenue ($)"
-                    stroke="#818cf8"
+                    stroke="var(--chart-color-1)"
                     strokeWidth={2}
                     dot={false}
                   />
@@ -419,7 +419,7 @@ const DashboardHome = () => {
                     type="monotone"
                     dataKey="gdpGrowth"
                     name="GDP Growth (%)"
-                    stroke="#34d399"
+                    stroke="var(--chart-color-2)"
                     strokeWidth={2}
                     dot={false}
                   />
@@ -442,8 +442,8 @@ const DashboardHome = () => {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorEmp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--chart-gradient-1)" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="var(--chart-gradient-1)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'} />
@@ -462,7 +462,7 @@ const DashboardHome = () => {
                     type="monotone"
                     dataKey="employees"
                     name="Total Employees"
-                    stroke="#06b6d4"
+                    stroke="var(--chart-color-3)"
                     fillOpacity={1}
                     fill="url(#colorEmp)"
                     strokeWidth={2}
@@ -471,7 +471,7 @@ const DashboardHome = () => {
                     type="monotone"
                     dataKey="businesses"
                     name="Total Businesses"
-                    stroke="#a855f7"
+                    stroke="var(--chart-color-4)"
                     strokeWidth={2}
                     dot={false}
                   />

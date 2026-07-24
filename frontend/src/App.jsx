@@ -12,6 +12,7 @@ import Recommendations from "./components/Recommendations";
 import AdminPanel from "./components/AdminPanel";
 import ForgotPassword from "./components/ForgotPassword";
 import NotFound from "./components/NotFound";
+import Settings from "./components/Settings";
 
 const TAB_TO_PATH = {
   dashboard: "/dashboard",
@@ -19,6 +20,7 @@ const TAB_TO_PATH = {
   predictions: "/predictions",
   map: "/map",
   recommendations: "/recommendations",
+  settings: "/settings",
   admin: "/admin/dashboard",
   admin_users: "/admin/users",
   admin_businesses: "/admin/businesses",
@@ -35,6 +37,7 @@ const PATH_TO_TAB = {
   "/predictions": "predictions",
   "/map": "map",
   "/recommendations": "recommendations",
+  "/settings": "settings",
   "/admin/dashboard": "admin",
   "/admin/users": "admin_users",
   "/admin/businesses": "admin_businesses",
@@ -172,6 +175,16 @@ function App() {
           <ProtectedRoute>
             <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
               <Recommendations />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Layout activeTab={activeTab} setActiveTab={handleTabChange} theme={theme}>
+              <Settings />
             </Layout>
           </ProtectedRoute>
         }

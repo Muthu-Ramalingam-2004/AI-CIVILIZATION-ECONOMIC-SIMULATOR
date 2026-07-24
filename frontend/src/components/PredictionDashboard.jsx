@@ -180,8 +180,8 @@ const PredictionDashboard = () => {
               <AreaChart data={forecastChartData}>
                 <defs>
                   <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--chart-gradient-risk)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--chart-gradient-risk)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'} />
@@ -200,7 +200,7 @@ const PredictionDashboard = () => {
                   type="monotone"
                   dataKey="collapseRisk"
                   name="Projected Collapse Risk"
-                  stroke="#f43f5e"
+                  stroke="var(--chart-color-4)"
                   fillOpacity={1}
                   fill="url(#colorRisk)"
                   strokeWidth={2.5}
@@ -209,7 +209,7 @@ const PredictionDashboard = () => {
                   type="monotone"
                   dataKey="unemployment"
                   name="Projected Unemployment"
-                  stroke="#eab308"
+                  stroke="var(--chart-color-5)"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -268,8 +268,8 @@ const PredictionDashboard = () => {
             <LineChart data={forecastChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'} />
               <XAxis dataKey="name" stroke={theme === 'dark' ? '#94a3b8' : '#64748b'} fontSize={11} />
-              <YAxis yAxisId="left" stroke="#10b981" fontSize={11} unit="%" />
-              <YAxis yAxisId="right" orientation="right" stroke="#6366f1" fontSize={11} />
+              <YAxis yAxisId="left" stroke="var(--chart-color-2)" fontSize={11} unit="%" />
+              <YAxis yAxisId="right" orientation="right" stroke="var(--chart-color-1)" fontSize={11} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: theme === 'dark' ? 'rgba(8,9,16,0.97)' : '#ffffff',
@@ -284,7 +284,7 @@ const PredictionDashboard = () => {
                 type="monotone"
                 dataKey="gdpGrowth"
                 name="GDP Growth Rate"
-                stroke="#10b981"
+                stroke="var(--chart-color-2)"
                 strokeWidth={2}
                 dot={true}
               />
@@ -293,7 +293,7 @@ const PredictionDashboard = () => {
                 type="monotone"
                 dataKey="activeStartups"
                 name="New Spawned Startups"
-                stroke="#6366f1"
+                stroke="var(--chart-color-1)"
                 strokeWidth={2}
                 dot={true}
               />

@@ -9,13 +9,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if auth token exists in localStorage
     const savedAuth = localStorage.getItem("auth");
     if (savedAuth) {
       try {
-        const { username, role, token } = JSON.parse(savedAuth);
-        setUser({ username, role });
+        const { token } = JSON.parse(savedAuth);
         setToken(token);
+        // Fetch detailed profile from backend
+        api.get("/auth/users/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(response => {
+          setUser(response.data);
+          if (response.data.theme) {
+            document.documentElement.setAttribute("data-theme", response.data.theme);
+            localStorage.setItem("theme", response.data.theme);
+          }
+        }).catch(err => {
+          console.error("Failed to fetch current user details", err);
+          // Fallback to local session if backend is offline
+          const parsed = JSON.parse(savedAuth);
+          setUser({ username: parsed.username, role: parsed.role });
+        }).finally(() => {
+          setLoading(false);
+        });
+        return;
       } catch (e) {
         console.error("Failed to parse auth from localStorage", e);
         localStorage.removeItem("auth");
@@ -36,12 +52,25 @@ export const AuthProvider = ({ children }) => {
       },
     });
 
-    const { access_token, role } = response.data;
-    const authSession = { username, role, token: access_token };
+    const { access_token } = response.data;
+    
+    // Fetch full user profile details using the newly acquired token
+    const userResponse = await api.get("/auth/users/me", {
+      headers: { Authorization: `Bearer ${access_token}` }
+    });
+    
+    const fullUser = userResponse.data;
+    const authSession = { username: fullUser.username, role: fullUser.role, token: access_token };
     
     localStorage.setItem("auth", JSON.stringify(authSession));
-    setUser({ username, role });
+    setUser(fullUser);
     setToken(access_token);
+    
+    if (fullUser.theme) {
+      document.documentElement.setAttribute("data-theme", fullUser.theme);
+      localStorage.setItem("theme", fullUser.theme);
+    }
+    
     return response.data;
   };
 
@@ -66,8 +95,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = (updatedUser, newToken = null) => {
+    setUser(updatedUser);
+    if (newToken) {
+      setToken(newToken);
+      const savedAuth = localStorage.getItem("auth");
+      if (savedAuth) {
+        try {
+          const parsed = JSON.parse(savedAuth);
+          parsed.token = newToken;
+          parsed.username = updatedUser.username;
+          parsed.role = updatedUser.role;
+          localStorage.setItem("auth", JSON.stringify(parsed));
+        } catch (e) {
+          console.error("Failed to update auth in localStorage", e);
+        }
+      }
+    } else {
+      const savedAuth = localStorage.getItem("auth");
+      if (savedAuth) {
+        try {
+          const parsed = JSON.parse(savedAuth);
+          parsed.username = updatedUser.username;
+          parsed.role = updatedUser.role;
+          localStorage.setItem("auth", JSON.stringify(parsed));
+        } catch (e) {
+          console.error("Failed to update auth in localStorage", e);
+        }
+      }
+    }
+    if (updatedUser.theme) {
+      document.documentElement.setAttribute("data-theme", updatedUser.theme);
+      localStorage.setItem("theme", updatedUser.theme);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading, updateProfile }}>
       {!loading && children}
     </AuthContext.Provider>
   );

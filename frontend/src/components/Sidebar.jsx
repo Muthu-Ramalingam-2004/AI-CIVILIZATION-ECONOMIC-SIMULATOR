@@ -4,7 +4,7 @@ import { useTheme } from "../context/ThemeContext";
 import {
   LayoutDashboard, Building2, TrendingUp, Map, Lightbulb,
   ShieldAlert, LogOut, Menu, X, User, Sun, Moon,
-  Users, Activity, BarChart3, Settings, Globe,
+  Users, Activity, BarChart3, Settings, Globe, Server,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────
@@ -16,6 +16,7 @@ const USER_MENU = [
   { id: "predictions",     label: "AI Predictions",  icon: TrendingUp       },
   { id: "map",             label: "World Map",        icon: Map              },
   { id: "recommendations", label: "Recommendations", icon: Lightbulb        },
+  { id: "settings",        label: "Settings",        icon: Settings         },
 ];
 
 const ADMIN_MENU = [
@@ -26,7 +27,8 @@ const ADMIN_MENU = [
   { id: "admin_map",         label: "World Map",   icon: Globe            },
   { id: "admin_analytics",   label: "Analytics",   icon: BarChart3        },
   { id: "admin_recommend",   label: "Recommendations", icon: Lightbulb    },
-  { id: "admin_settings",    label: "Settings",    icon: Settings         },
+  { id: "admin_settings",    label: "System Settings",    icon: Server       },
+  { id: "settings",          label: "Settings",           icon: Settings      },
 ];
 
 const Sidebar = ({ activeTab, setActiveTab }) => {

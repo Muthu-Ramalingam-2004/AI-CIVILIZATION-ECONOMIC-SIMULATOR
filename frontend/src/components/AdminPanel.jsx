@@ -832,12 +832,12 @@ function AnalyticsTab() {
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis dataKey="name" stroke={axisColor} fontSize={11} />
-              <YAxis yAxisId="l" stroke="#818cf8" fontSize={10} />
-              <YAxis yAxisId="r" orientation="right" stroke="#34d399" fontSize={10} />
+              <YAxis yAxisId="l" stroke="var(--chart-color-1)" fontSize={10} />
+              <YAxis yAxisId="r" orientation="right" stroke="var(--chart-color-2)" fontSize={10} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{fontSize:11}} />
-              <Line yAxisId="l" type="monotone" dataKey="revenue" name="Avg Revenue ($)" stroke="#818cf8" strokeWidth={2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="gdp" name="GDP Growth (%)" stroke="#34d399" strokeWidth={2} dot={false} />
+              <Line yAxisId="l" type="monotone" dataKey="revenue" name="Avg Revenue ($)" stroke="var(--chart-color-1)" strokeWidth={2} dot={false} />
+              <Line yAxisId="r" type="monotone" dataKey="gdp" name="GDP Growth (%)" stroke="var(--chart-color-2)" strokeWidth={2} dot={false} />
             </LineChart>
           </ChartWrapper>
         </GlassCard>
@@ -848,8 +848,8 @@ function AnalyticsTab() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="empGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#06b6d4" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                  <stop offset="5%"  stopColor="var(--chart-gradient-1)" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="var(--chart-gradient-1)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -857,8 +857,8 @@ function AnalyticsTab() {
               <YAxis stroke={axisColor} fontSize={10} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{fontSize:11}} />
-              <Area type="monotone" dataKey="employees" name="Employees" stroke="#06b6d4" fill="url(#empGrad)" strokeWidth={2} />
-              <Line type="monotone" dataKey="businesses" name="Businesses" stroke="#a855f7" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="employees" name="Employees" stroke="var(--chart-color-3)" fill="url(#empGrad)" strokeWidth={2} />
+              <Line type="monotone" dataKey="businesses" name="Businesses" stroke="var(--chart-color-4)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ChartWrapper>
         </GlassCard>
@@ -871,7 +871,7 @@ function AnalyticsTab() {
               <XAxis dataKey="name" stroke={axisColor} fontSize={11} />
               <YAxis stroke={axisColor} fontSize={10} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="migration" name="Migration" fill="#f59e0b" radius={[4,4,0,0]} />
+              <Bar dataKey="migration" name="Migration" fill="var(--chart-color-5)" radius={[4,4,0,0]} />
             </BarChart>
           </ChartWrapper>
         </GlassCard>
@@ -885,8 +885,8 @@ function AnalyticsTab() {
               <YAxis stroke={axisColor} fontSize={10} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{fontSize:11}} />
-              <Line type="monotone" dataKey="collapse" name="Collapse Risk (%)" stroke="#ef4444" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="startups" name="Active Startups" stroke="#10b981" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="collapse" name="Collapse Risk (%)" stroke="var(--chart-color-4)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="startups" name="Active Startups" stroke="var(--chart-color-2)" strokeWidth={2} dot={false} />
             </LineChart>
           </ChartWrapper>
         </GlassCard>

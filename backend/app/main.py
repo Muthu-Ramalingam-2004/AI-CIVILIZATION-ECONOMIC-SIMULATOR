@@ -37,6 +37,27 @@ def verify_and_initialize_database():
     # 1. Create tables if they do not exist
     Base.metadata.create_all(bind=engine)
 
+    # 1b. Self-healing SQLite migrations: add missing columns to the users table if it already existed
+    try:
+        inspector = inspect(engine)
+        if "users" in inspector.get_table_names():
+            user_cols = [c["name"] for c in inspector.get_columns("users")]
+            with engine.begin() as conn:
+                if "full_name" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN full_name VARCHAR;"))
+                    print("[Startup Migration] Added full_name column to users table.")
+                if "phone_number" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN phone_number VARCHAR;"))
+                    print("[Startup Migration] Added phone_number column to users table.")
+                if "profile_picture" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN profile_picture VARCHAR;"))
+                    print("[Startup Migration] Added profile_picture column to users table.")
+                if "theme" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN theme VARCHAR DEFAULT 'dark';"))
+                    print("[Startup Migration] Added theme column to users table.")
+    except Exception as migration_err:
+        print(f"[Startup Migration Warning] Failed to auto-migrate users table columns: {migration_err}")
+
     # 2. Run PRAGMA integrity check
     integrity_ok = False
     integrity_msg = "Unknown"

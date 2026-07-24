@@ -6,7 +6,10 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token, decode_access_token
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, Token, ForgotPasswordRequest
+from app.schemas.user import (
+    UserCreate, UserResponse, Token, ForgotPasswordRequest,
+    ProfileUpdate, EmailUpdate, PasswordChange, ThemeUpdate
+)
 from app.services.simulator import log_event
 from datetime import datetime, timezone, timedelta
 import re
@@ -228,4 +231,141 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
 def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     log_event(db, f"User '{current_user.username}' logged out successfully.", "INFO", "auth")
     return {"message": "Logged out successfully."}
+
+@router.get("/users/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/users/me/profile")
+def update_my_profile(
+    req: ProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Validate fields
+    username = req.username.strip()
+    email = req.email.strip()
+    
+    if not username:
+        raise HTTPException(status_code=400, detail="Username cannot be empty.")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email cannot be empty.")
+        
+    # Check if username is taken by someone else
+    if username.lower() != current_user.username.lower():
+        username_exists = db.query(User).filter(
+            (func.lower(User.username) == func.lower(username)) & (User.id != current_user.id)
+        ).first()
+        if username_exists:
+            raise HTTPException(status_code=400, detail="Username already exists.")
+            
+    # Check if email is taken by someone else
+    if email.lower() != current_user.email.lower():
+        email_exists = db.query(User).filter(
+            (func.lower(User.email) == func.lower(email)) & (User.id != current_user.id)
+        ).first()
+        if email_exists:
+            raise HTTPException(status_code=400, detail="Email already exists.")
+
+    # Update fields
+    old_username = current_user.username
+    current_user.username = username
+    current_user.email = email
+    current_user.full_name = req.full_name.strip() if req.full_name else None
+    current_user.phone_number = req.phone_number.strip() if req.phone_number else None
+    current_user.profile_picture = req.profile_picture.strip() if req.profile_picture else None
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    log_event(db, f"User '{old_username}' updated profile. New username: '{current_user.username}'.", "INFO", "auth")
+    
+    # If username changed, generate a new access token
+    new_token = None
+    if old_username.lower() != current_user.username.lower():
+        new_token = create_access_token(subject=current_user.username)
+        
+    return {
+        "message": "Profile updated successfully.",
+        "user": current_user,
+        "access_token": new_token
+    }
+
+@router.put("/users/me/email")
+def update_my_email(
+    req: EmailUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_email = req.current_email.strip()
+    new_email = req.new_email.strip()
+    
+    if current_email.lower() != current_user.email.lower():
+        raise HTTPException(status_code=400, detail="Incorrect current email address.")
+        
+    if new_email.lower() == current_user.email.lower():
+        return {"message": "Email updated successfully.", "user": current_user}
+        
+    email_exists = db.query(User).filter(
+        (func.lower(User.email) == func.lower(new_email)) & (User.id != current_user.id)
+    ).first()
+    if email_exists:
+        raise HTTPException(status_code=400, detail="Email already exists in the system.")
+        
+    current_user.email = new_email
+    db.commit()
+    db.refresh(current_user)
+    
+    log_event(db, f"User '{current_user.username}' changed email to '{new_email}'.", "INFO", "auth")
+    return {"message": "Email updated successfully.", "user": current_user}
+
+@router.put("/users/me/password")
+def update_my_password(
+    req: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify current password
+    if not verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password.")
+        
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="New passwords do not match.")
+        
+    pwd = req.new_password
+    if len(pwd) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
+    if not re.search(r"[A-Z]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one lowercase letter.")
+    if not re.search(r"[0-9]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number.")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one special character.")
+        
+    current_user.hashed_password = get_password_hash(pwd)
+    db.commit()
+    db.refresh(current_user)
+    
+    log_event(db, f"User '{current_user.username}' updated their password.", "INFO", "auth")
+    return {"message": "Password updated successfully."}
+
+@router.put("/users/me/theme")
+def update_my_theme(
+    req: ThemeUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    theme = req.theme.strip().lower()
+    if theme not in ["light", "dark", "ocean", "nature"]:
+        raise HTTPException(status_code=400, detail="Invalid theme choice.")
+        
+    current_user.theme = theme
+    db.commit()
+    db.refresh(current_user)
+    
+    log_event(db, f"User '{current_user.username}' changed theme to '{theme}'.", "INFO", "auth")
+    return {"message": "Theme updated successfully.", "theme": theme}
+
 
