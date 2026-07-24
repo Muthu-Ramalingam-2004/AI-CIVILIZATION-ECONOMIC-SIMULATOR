@@ -8,7 +8,7 @@ interface ResetPasswordProps {
 }
 
 const ResetPassword: React.FC<ResetPasswordProps> = ({ navigateTo }) => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   
   const [token, setToken] = useState("");
   const [tokenError, setTokenError] = useState("");
@@ -136,15 +136,29 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ navigateTo }) => {
           style={{ background: "radial-gradient(circle, rgba(6,182,212,0.5) 0%, transparent 70%)" }} />
       </div>
 
-      {/* Theme toggle (top-right) */}
-      <button
-        onClick={toggleTheme}
-        className="fixed top-5 right-5 p-2.5 rounded-xl cursor-pointer z-10 transition-all"
-        style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-color)", color: "var(--text-muted)" }}
-        title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      >
-        {theme === "dark" ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} className="text-indigo-500" />}
-      </button>
+      {/* Global Theme Selector (top-right) */}
+      <div className="fixed top-5 right-5 z-20 flex items-center gap-2">
+        <div className="relative">
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="glass-input text-xs font-semibold py-2.5 pl-3 pr-8 rounded-xl cursor-pointer appearance-none transition-all w-32"
+            style={{
+              background: "var(--bg-card)",
+              border: "1.5px solid var(--border-color)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <option value="light">☀ Light</option>
+            <option value="dark">🌙 Dark</option>
+            <option value="ocean">🌊 Ocean</option>
+            <option value="nature">🌿 Nature</option>
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[10px]" style={{ color: "var(--text-muted)" }}>
+            ▼
+          </div>
+        </div>
+      </div>
 
       {/* Main Card */}
       <div className="w-full max-w-[420px] relative z-10">

@@ -949,7 +949,8 @@ function RecommendationsTab() {
    TAB 8 — SYSTEM SETTINGS
 ───────────────────────────────────────────── */
 function SettingsTab() {
-  const { theme, toggleTheme } = useTheme();
+  const { user, updateProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [apiStatus, setApiStatus] = useState(null);
   const [checkingApi, setCheckingApi] = useState(false);
 
@@ -1020,24 +1021,41 @@ function SettingsTab() {
       {/* Theme */}
       <GlassCard>
         <h3 className="text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2" style={{color:"var(--text-primary)"}}>
-          {theme==="dark"?<Moon size={15} className="text-indigo-400"/>:<Sun size={15} className="text-amber-400"/>} Theme Settings
+          Theme Settings
         </h3>
-        <div className="flex gap-3">
-          {["dark","light"].map(t => (
-            <button key={t} onClick={() => { if(theme !== t) toggleTheme(); }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all"
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { id: "light", label: "☀ Light" },
+            { id: "dark", label: "🌙 Dark" },
+            { id: "ocean", label: "🌊 Ocean" },
+            { id: "nature", label: "🌿 Nature" }
+          ].map(t => (
+            <button key={t.id} onClick={async () => {
+              if (theme !== t.id) {
+                setTheme(t.id);
+                if (user) {
+                  try {
+                    await api.put("/auth/users/me/theme", { theme: t.id });
+                    updateProfile({ ...user, theme: t.id });
+                  } catch (err) {
+                    console.error("Failed to save theme in settings tab:", err);
+                  }
+                }
+              }
+            }}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all"
               style={{
-                background: theme===t ? "rgba(168,85,247,0.12)" : "var(--bg-hover)",
-                border: `1.5px solid ${theme===t ? "rgba(168,85,247,0.40)" : "var(--border-color)"}`,
-                color: theme===t ? "#a855f7" : "var(--text-muted)",
+                background: theme===t.id ? "var(--bg-hover)" : "transparent",
+                border: `1.5px solid ${theme===t.id ? "var(--border-focus)" : "var(--border-color)"}`,
+                color: theme===t.id ? "var(--text-primary)" : "var(--text-muted)",
               }}
             >
-              {t==="dark"?<Moon size={15}/>:<Sun size={15}/>} {t.charAt(0).toUpperCase()+t.slice(1)} Mode
+              {t.label}
             </button>
           ))}
         </div>
         <p className="text-xs mt-3" style={{color:"var(--text-faint)"}}>
-          Theme is persisted in localStorage and applies across all pages instantly.
+          Theme is persisted and applies across all pages instantly.
         </p>
       </GlassCard>
 

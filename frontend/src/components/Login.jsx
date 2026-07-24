@@ -8,7 +8,7 @@ import {
 
 const Login = ({ navigateTo }) => {
   const { login, register } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [role, setRole] = useState("user");  // "user" | "admin"
@@ -86,15 +86,29 @@ const Login = ({ navigateTo }) => {
           style={{ background: "radial-gradient(circle, rgba(6,182,212,0.5) 0%, transparent 70%)" }} />
       </div>
 
-      {/* Theme toggle (top-right) */}
-      <button
-        onClick={toggleTheme}
-        className="fixed top-5 right-5 p-2.5 rounded-xl cursor-pointer z-10 transition-all"
-        style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-color)", color: "var(--text-muted)" }}
-        title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      >
-        {theme === "dark" ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} className="text-indigo-500" />}
-      </button>
+      {/* Global Theme Selector (top-right) */}
+      <div className="fixed top-5 right-5 z-20 flex items-center gap-2">
+        <div className="relative">
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="glass-input text-xs font-semibold py-2.5 pl-3 pr-8 rounded-xl cursor-pointer appearance-none transition-all w-32"
+            style={{
+              background: "var(--bg-card)",
+              border: "1.5px solid var(--border-color)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <option value="light" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>☀ Light</option>
+            <option value="dark" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌙 Dark</option>
+            <option value="ocean" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌊 Ocean</option>
+            <option value="nature" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌿 Nature</option>
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[10px]" style={{ color: "var(--text-muted)" }}>
+            ▼
+          </div>
+        </div>
+      </div>
 
       {/* Login Card */}
       <div className="w-full max-w-[420px] relative z-10">

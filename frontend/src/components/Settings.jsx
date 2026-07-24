@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import api from "../utils/api";
 import GlassCard from "./GlassCard";
 import {
-  User, Mail, Lock, Palette, CheckCircle2, AlertTriangle,
+  User, Mail, Lock, Shield, CheckCircle2, AlertTriangle,
   Loader2, Phone, Image, Settings as LucideSettings, Info
 } from "lucide-react";
 
 export default function Settings() {
   const { user, updateProfile } = useAuth();
-  const { theme, setTheme } = useTheme();
   
   const [activeSubTab, setActiveSubTab] = useState("profile");
 
@@ -57,11 +55,6 @@ export default function Settings() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
-
-  // --- Theme/Appearance States ---
-  const [themeSaving, setThemeSaving] = useState(false);
-  const [themeError, setThemeError] = useState("");
-  const [themeSuccess, setThemeSuccess] = useState("");
 
   // --- Profile Handler ---
   const handleUpdateProfile = async (e) => {
@@ -239,39 +232,11 @@ export default function Settings() {
     }
   };
 
-  // --- Theme Handler ---
-  const handleThemeChange = async (themeName) => {
-    setThemeError("");
-    setThemeSuccess("");
-    setThemeSaving(true);
-
-    try {
-      // Optimistically update theme locally
-      setTheme(themeName);
-
-      const response = await api.put("/auth/users/me/theme", {
-        theme: themeName,
-      });
-
-      // Update AuthContext user object with new theme
-      if (user) {
-        updateProfile({ ...user, theme: themeName });
-      }
-
-      setThemeSuccess(`Theme successfully changed to ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.`);
-    } catch (err) {
-      console.error(err);
-      setThemeError("Failed to save theme preference in the database.");
-    } finally {
-      setThemeSaving(false);
-    }
-  };
-
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
     { id: "email", label: "Change Email", icon: Mail },
     { id: "password", label: "Change Password", icon: Lock },
-    { id: "appearance", label: "Appearance", icon: Palette },
+    { id: "account", label: "Account", icon: Shield },
   ];
 
   return (
@@ -292,7 +257,7 @@ export default function Settings() {
             Account Settings
           </h1>
           <p className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Manage your personal profile and appearance preferences
+            Manage your personal profile and account settings
           </p>
         </div>
       </div>
@@ -316,8 +281,6 @@ export default function Settings() {
                       setEmailSuccess("");
                       setPasswordError("");
                       setPasswordSuccess("");
-                      setThemeError("");
-                      setThemeSuccess("");
                     }}
                     className={`nav-item flex items-center justify-start gap-2.5 px-4 py-2.5 rounded-xl cursor-pointer w-full text-xs font-semibold transition-all border-none ${
                       isActive ? "active" : ""
@@ -580,106 +543,62 @@ export default function Settings() {
             </GlassCard>
           )}
 
-          {activeSubTab === "appearance" && (
+          {activeSubTab === "account" && (
             <GlassCard>
               <h2 className="text-sm font-bold uppercase tracking-wider mb-5 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
-                <Palette size={16} style={{ color: "var(--border-focus)" }} /> Theme Settings
+                <Shield size={16} style={{ color: "var(--border-focus)" }} /> Account Overview
               </h2>
 
-              {themeError && (
-                <div className="mb-4 p-3 rounded-xl flex items-start gap-2 text-xs" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444" }}>
-                  <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>{themeError}</span>
+              <div className="space-y-6">
+                {/* Account Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Username</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{user?.username}</span>
+                  </div>
+                  <div className="p-4 rounded-xl border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Email Address</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{user?.email}</span>
+                  </div>
+                  <div className="p-4 rounded-xl border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Access Role</span>
+                    <span className="text-sm font-bold uppercase tracking-wider" style={{ color: user?.role === "admin" ? "#a855f7" : "#06b6d4" }}>{user?.role}</span>
+                  </div>
+                  <div className="p-4 rounded-xl border" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Status</span>
+                    <div className="mt-1"><span className="text-[10px] font-bold badge badge-emerald">Active</span></div>
+                  </div>
                 </div>
-              )}
 
-              {themeSuccess && (
-                <div className="mb-4 p-3 rounded-xl flex items-start gap-2 text-xs" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", color: "#10b981" }}>
-                  <CheckCircle2 size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>{themeSuccess}</span>
+                {/* Info Note */}
+                <div className="p-4 rounded-xl border flex items-start gap-3" style={{ background: "var(--bg-hover)", borderColor: "var(--border-color)" }}>
+                  <Info size={16} className="mt-0.5 text-cyan-400 flex-shrink-0" style={{ color: "var(--color-info)" }} />
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                    Your account is registered as a <strong>{user?.role}</strong> profile on the economic simulation network. For custom admin elevation, privilege revocations, or complete records disposal, please submit a request to your system administrator.
+                  </p>
                 </div>
-              )}
 
-              <p className="text-xs mb-5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Choose your visual theme preference. The setting will apply instantly and persist across refreshes, logouts, restarts, and other devices.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Dark Theme Option */}
-                <button
-                  onClick={() => handleThemeChange("dark")}
-                  disabled={themeSaving}
-                  className="flex flex-col items-start gap-2 p-4 rounded-xl border text-left cursor-pointer transition-all w-full"
-                  style={{
-                    background: theme === "dark" ? "rgba(124,58,237,0.1)" : "var(--bg-hover)",
-                    borderColor: theme === "dark" ? "var(--border-focus)" : "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 w-full justify-between">
-                    <span className="font-bold text-xs uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>Dark Theme</span>
-                    <div className="w-4 h-4 rounded-full bg-slate-900 border" style={{ borderColor: theme === "dark" ? "var(--border-focus)" : "var(--border-color)" }} />
+                {/* Danger Zone */}
+                <div className="border-t pt-5" style={{ borderColor: "var(--border-color)" }}>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-rose-500 mb-3">Danger Zone</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => alert("To deactivate your account, please email support@civilization.org with your registered details.")}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold border border-rose-500/20 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 transition-all cursor-pointer"
+                    >
+                      Deactivate Account
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => alert("Account deletion requires admin identity verification. Please contact support@civilization.org.")}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold border border-rose-600/30 text-rose-500 bg-rose-600/5 hover:bg-rose-600/15 transition-all cursor-pointer"
+                    >
+                      Delete Account
+                    </button>
                   </div>
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Sleek dark glassmorphism layout tailored for low light environments.</span>
-                </button>
-
-                {/* Light Theme Option */}
-                <button
-                  onClick={() => handleThemeChange("light")}
-                  disabled={themeSaving}
-                  className="flex flex-col items-start gap-2 p-4 rounded-xl border text-left cursor-pointer transition-all w-full"
-                  style={{
-                    background: theme === "light" ? "rgba(37,99,235,0.06)" : "var(--bg-hover)",
-                    borderColor: theme === "light" ? "var(--border-focus)" : "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 w-full justify-between">
-                    <span className="font-bold text-xs uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>Light Theme</span>
-                    <div className="w-4 h-4 rounded-full bg-slate-100 border" style={{ borderColor: theme === "light" ? "var(--border-focus)" : "var(--border-color)" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Crisp white layouts offering peak productivity during daylight hours.</span>
-                </button>
-
-                {/* Ocean Theme Option */}
-                <button
-                  onClick={() => handleThemeChange("ocean")}
-                  disabled={themeSaving}
-                  className="flex flex-col items-start gap-2 p-4 rounded-xl border text-left cursor-pointer transition-all w-full"
-                  style={{
-                    background: theme === "ocean" ? "rgba(14,165,233,0.08)" : "var(--bg-hover)",
-                    borderColor: theme === "ocean" ? "#0EA5E9" : "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 w-full justify-between">
-                    <span className="font-bold text-xs uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>Ocean Theme</span>
-                    <div className="w-4 h-4 rounded-full bg-[#0EA5E9] border" style={{ borderColor: theme === "ocean" ? "#0EA5E9" : "var(--border-color)" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Calming blue colors with soft gradients, ocean grids, and blue-tinted charts.</span>
-                </button>
-
-                {/* Nature Theme Option */}
-                <button
-                  onClick={() => handleThemeChange("nature")}
-                  disabled={themeSaving}
-                  className="flex flex-col items-start gap-2 p-4 rounded-xl border text-left cursor-pointer transition-all w-full"
-                  style={{
-                    background: theme === "nature" ? "rgba(22,163,74,0.08)" : "var(--bg-hover)",
-                    borderColor: theme === "nature" ? "#16A34A" : "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 w-full justify-between">
-                    <span className="font-bold text-xs uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>Nature Theme</span>
-                    <div className="w-4 h-4 rounded-full bg-[#16A34A] border" style={{ borderColor: theme === "nature" ? "#16A34A" : "var(--border-color)" }} />
-                  </div>
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Fresh leafy green accents offering maximum readability and organic vibes.</span>
-                </button>
+                </div>
               </div>
-
-              {themeSaving && (
-                <div className="mt-4 flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                  <Loader2 size={13} className="animate-spin" />
-                  Saving preference in database...
-                </div>
-              )}
             </GlassCard>
           )}
         </div>

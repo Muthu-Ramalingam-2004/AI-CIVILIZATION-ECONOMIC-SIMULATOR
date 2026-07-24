@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import api from "../utils/api";
 import {
   LayoutDashboard, Building2, TrendingUp, Map, Lightbulb,
   ShieldAlert, LogOut, Menu, X, User, Sun, Moon,
@@ -32,8 +33,8 @@ const ADMIN_MENU = [
 ];
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { user, logout, updateProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const isAdmin = user?.role === "admin";
@@ -157,26 +158,43 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         <div className="px-3 pb-4 pt-3 space-y-2 flex-shrink-0"
           style={{ borderTop: "1px solid var(--border-color)" }}>
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl cursor-pointer text-xs font-semibold transition-all"
-            style={{
-              background: "var(--bg-hover)",
-              border: "1px solid var(--border-color)",
-              color: "var(--text-muted)",
-            }}
-          >
-            <span className="flex items-center gap-2">
-              {theme === "dark"
-                ? <><Sun size={14} className="text-amber-400" /><span style={{ color: "var(--text-secondary)" }}>Light Mode</span></>
-                : <><Moon size={14} className="text-indigo-500" /><span style={{ color: "var(--text-secondary)" }}>Dark Mode</span></>
-              }
+          {/* Global Theme Selector */}
+          <div className="flex flex-col gap-1 w-full px-1">
+            <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: "var(--text-muted)" }}>
+              Active Theme
             </span>
-            <span className={`relative w-9 h-5 rounded-full flex items-center transition-colors duration-300 ${theme === "dark" ? "bg-slate-700" : "bg-indigo-500"}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${theme === "dark" ? "translate-x-0" : "translate-x-4"}`} />
-            </span>
-          </button>
+            <div className="relative">
+              <select
+                value={theme}
+                onChange={async (e) => {
+                  const newTheme = e.target.value;
+                  setTheme(newTheme);
+                  if (user) {
+                    try {
+                      await api.put("/auth/users/me/theme", { theme: newTheme });
+                      updateProfile({ ...user, theme: newTheme });
+                    } catch (err) {
+                      console.error("Failed to save theme choice:", err);
+                    }
+                  }
+                }}
+                className="w-full glass-input text-xs font-semibold py-2.5 px-3 pr-8 rounded-xl cursor-pointer appearance-none transition-all"
+                style={{
+                  background: "var(--bg-hover)",
+                  border: "1px solid var(--border-color)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <option value="light" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>☀ Light Theme</option>
+                <option value="dark" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌙 Dark Theme</option>
+                <option value="ocean" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌊 Ocean Theme</option>
+                <option value="nature" style={{ background: "var(--bg-card-solid)", color: "var(--text-primary)" }}>🌿 Nature Theme</option>
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[10px]" style={{ color: "var(--text-muted)" }}>
+                ▼
+              </div>
+            </div>
+          </div>
 
           {/* User card */}
           <div
