@@ -38,7 +38,9 @@ try:
     # Test connection immediately
     with engine.connect() as conn:
         pass
-    print(f"Database connection verified: {db_url.split('@')[-1] if '@' in db_url else db_url}")
+    print("========== DATABASE DEBUG ==========", file=sys.stderr)
+    print(f"DATABASE_URL = {db_url}", file=sys.stderr)
+    print("====================================", file=sys.stderr)
 except Exception as e:
     print(f"CRITICAL DATABASE CONNECTION ERROR: Failed to connect to {db_url}. Error: {e}", file=sys.stderr)
     raise e

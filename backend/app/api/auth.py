@@ -108,6 +108,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     print("----- LOGIN DEBUG -----", file=sys.stderr)
     print(f"Received username: '{username_input}'", file=sys.stderr)
     sys.stderr.flush()
+    users = db.query(User).all()
+
+    print("===== USERS IN CURRENT DATABASE =====", file=sys.stderr)
+
+    for u in users:
+        print(
+            f"ID={u.id}, USERNAME={u.username}, EMAIL={u.email}",
+            file=sys.stderr
+        )
+
+    print("=====================================", file=sys.stderr)
+    sys.stderr.flush()
 
     user = db.query(User).filter(
         (func.lower(User.username) == func.lower(username_input)) |
