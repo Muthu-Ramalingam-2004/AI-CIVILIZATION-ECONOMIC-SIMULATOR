@@ -94,22 +94,52 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     
+    print("----- REGISTER DEBUG -----", file=sys.stderr)
+    print(f"Username saved: '{user.username}'", file=sys.stderr)
+    print(f"Email saved: '{user.email}'", file=sys.stderr)
+    sys.stderr.flush()
+
     log_event(db, f"New user '{user.username}' registered successfully with role '{user.role}'.", "INFO", "auth")
     return user
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    username = form_data.username.strip()
-    user = db.query(User).filter(func.lower(User.username) == func.lower(username)).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    username_input = form_data.username.strip()
+    print("----- LOGIN DEBUG -----", file=sys.stderr)
+    print(f"Received username: '{username_input}'", file=sys.stderr)
+    sys.stderr.flush()
+
+    user = db.query(User).filter(
+        (func.lower(User.username) == func.lower(username_input)) |
+        (func.lower(User.email) == func.lower(username_input))
+    ).first()
+
+    if user:
+        print(f"User found: '{user.username}' (email: '{user.email}')", file=sys.stderr)
+    else:
+        print("User found: None", file=sys.stderr)
+    sys.stderr.flush()
+
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect username or password"
+            detail="Incorrect username or password: User not found."
         )
+
+    is_valid_password = verify_password(form_data.password, user.hashed_password)
+    print(f"Password verify result: {is_valid_password}", file=sys.stderr)
+    sys.stderr.flush()
+
+    if not is_valid_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect username or password: Cryptographic mismatch."
+        )
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+            detail="User is inactive"
         )
     
     access_token = create_access_token(subject=user.username)
@@ -202,6 +232,11 @@ def create_user(
 
 @router.post("/forgot-password")
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    print("----- FORGOT PASSWORD DEBUG -----", file=sys.stderr)
+    username_or_email_input = req.username_or_email.strip() if req.username_or_email else ""
+    print(f"Input: '{username_or_email_input}'", file=sys.stderr)
+    sys.stderr.flush()
+
     # 1. Verify new password matches confirm password
     if req.new_password != req.confirm_password:
         raise HTTPException(
@@ -223,12 +258,17 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must contain at least one special character.")
 
     # 3. Find user by username OR email case-insensitively
-    username_or_email = req.username_or_email.strip()
     user = db.query(User).filter(
-        (func.lower(User.username) == func.lower(username_or_email)) | 
-        (func.lower(User.email) == func.lower(username_or_email))
+        (func.lower(User.username) == func.lower(username_or_email_input)) | 
+        (func.lower(User.email) == func.lower(username_or_email_input))
     ).first()
     
+    if user:
+        print(f"User found: '{user.username}'", file=sys.stderr)
+    else:
+        print("User found: None", file=sys.stderr)
+    sys.stderr.flush()
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -239,6 +279,10 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user.hashed_password = get_password_hash(pwd)
     db.commit()
     db.refresh(user)
+
+    print("Password updated successfully", file=sys.stderr)
+    print("---------------------------------", file=sys.stderr)
+    sys.stderr.flush()
 
     # 5. Log the password reset event
     log_event(db, f"Password successfully reset for user: {user.username}", "INFO", "auth")

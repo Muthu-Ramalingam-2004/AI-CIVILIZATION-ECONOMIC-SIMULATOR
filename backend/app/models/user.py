@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import validates
 from app.core.database import Base
 
 class User(Base):
@@ -14,3 +15,9 @@ class User(Base):
     phone_number = Column(String, nullable=True)
     profile_picture = Column(String, nullable=True)
     theme = Column(String, default="dark", nullable=True)
+
+    @validates("username", "email", "hashed_password", "full_name", "phone_number")
+    def validate_and_trim(self, key, value):
+        if isinstance(value, str):
+            return value.strip()
+        return value
