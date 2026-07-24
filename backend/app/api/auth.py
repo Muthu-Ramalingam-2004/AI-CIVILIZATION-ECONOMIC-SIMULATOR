@@ -13,7 +13,7 @@ from app.schemas.user import (
 from app.services.simulator import log_event
 from datetime import datetime, timezone, timedelta
 import re
-
+import sys
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
